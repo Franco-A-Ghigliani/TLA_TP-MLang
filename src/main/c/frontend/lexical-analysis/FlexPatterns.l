@@ -18,6 +18,7 @@
 %x SIMULATION
 %x SIMULATION_PARAMS
 %x SIMULATION_NODES
+%x PARAMS_VALUE
 
 /**
  * Reusable patterns.
@@ -33,17 +34,18 @@
 <MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
-"Simulation"                        { BEGIN(SIMULATION); BeginSimulationLexemeAction(createLexicalAnalyzerContext()); }
+"Simulation"                        { BEGIN(SIMULATION); (createLexicalAnalyzerContext()); }
 <SIMULATION_NODES> "}"              { EndSimulationLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 <SIMULATION> "("                    { BEGIN(SIMULATION_PARAMS); BeginSimulationParamsLexemeAction(createLexicalAnalyzerContext()); }
 <SIMULATION_PARAMS> ")"             { EndSimulationParamsLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION); }
 
 <SIMULATION_PARAMS> [a-zA-Z]+       { return ParamLexemeAction(createLexicalAnalyzerContext()); }
-<SIMULATION_PARAMS> "="             { return EqualsLexemeAction(createLexicalAnalyzerContext()); }
-<SIMULATION_PARAMS> \"[^"]+\"       { return StringLexemeAction(createLexicalAnalyzerContext()); }
-<SIMULATION_PARAMS> ","             { return CommaLexemeAction(createLexicalAnalyzerContext()); }
-<SIMULATION_PARAMS> [[:digit:]]+    { return IntegerLexemeAction(createLexicalAnalyzerContext()); }
+<SIMULATION_PARAMS> "="             { BEGIN(PARAMS_VALUE); BeginParamsValueLexemeAction(createLexicalAnalyzerContext()); }
+<PARAMS_VALUE> [,)]                 { EndParamsValueLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION_PARAMS); }
+<PARAMS_VALUE> \"[^"]+\"            { return StringLexemeAction(createLexicalAnalyzerContext()); }
+<PARAMS_VALUE> [[:digit:]]+         { return IntegerLexemeAction(createLexicalAnalyzerContext()); }
+<PARAMS_VALUE> [^",)]+              { return NodeLexemeAction(createLexicalAnalyzerContext()); }
 
 <SIMULATION> "{"                    { BEGIN(SIMULATION_NODES); BeginSimulationNodesLexemeAction(createLexicalAnalyzerContext()); }
 
