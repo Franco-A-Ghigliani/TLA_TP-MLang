@@ -33,7 +33,7 @@ void EndSimulationParamsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerCon
 
 void BeginSimulationNodesLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-
+Token ParamLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token EqualsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token CommaLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
