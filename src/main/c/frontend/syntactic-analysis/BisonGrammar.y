@@ -49,6 +49,7 @@
 %token <token> OPEN_PARENTHESIS
 %token <token> SUB
 %token <token> PARAM
+%token <token> NODE
 
 %token <token> UNKNOWN
 
