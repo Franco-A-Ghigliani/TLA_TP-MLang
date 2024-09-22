@@ -43,7 +43,7 @@
 <SIMULATION_PARAMS>[a-zA-Z]+                { return ParamLexemeAction(createLexicalAnalyzerContext()); }
 <SIMULATION_PARAMS>"="                      { BEGIN(PARAMS_VALUE); BeginParamsValueLexemeAction(createLexicalAnalyzerContext()); }
 <PARAMS_VALUE>[,)]                          { EndParamsValueLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION_PARAMS); }
-<PARAMS_VALUE>\"[^"]+\"                     { return StringLexemeAction(createLexicalAnalyzerContext()); }
+<PARAMS_VALUE>\"((\\\")|[^"])+\"            { return StringLexemeAction(createLexicalAnalyzerContext()); }
 <PARAMS_VALUE>[[:digit:]]+                  { return IntegerLexemeAction(createLexicalAnalyzerContext()); }
 <PARAMS_VALUE>[^",)]+                       { return NodeLexemeAction(createLexicalAnalyzerContext()); }
 
