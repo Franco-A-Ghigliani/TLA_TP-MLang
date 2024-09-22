@@ -12,6 +12,7 @@
 
 	int integer;
 	Token token;
+	char* string;
 
 	/** Non-terminals. */
 
@@ -38,12 +39,16 @@
 
 /** Terminals. */
 %token <integer> INTEGER
+%token <string> STRING
+%token <token> EQUALS
+%token <token> COMMA
 %token <token> ADD
 %token <token> CLOSE_PARENTHESIS
 %token <token> DIV
 %token <token> MUL
 %token <token> OPEN_PARENTHESIS
 %token <token> SUB
+%token <token> PARAM
 
 %token <token> UNKNOWN
 

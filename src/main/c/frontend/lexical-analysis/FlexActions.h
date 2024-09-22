@@ -25,9 +25,19 @@ void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerC
 void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-Token ArithmeticOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
+void BeginSimulationLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void EndSimulationLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+void BeginSimulationParamsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void EndSimulationParamsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+void BeginSimulationNodesLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+
+Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token EqualsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token CommaLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token ParenthesisLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 

@@ -15,6 +15,9 @@
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
 %x MULTILINE_COMMENT
+%x SIMULATION
+%x SIMULATION_PARAMS
+%x SIMULATION_NODES
 
 /**
  * Reusable patterns.
@@ -27,19 +30,22 @@
 
 "/*"								{ BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>"*/"				{ EndMultilineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
-<MULTILINE_COMMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
-"-"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), SUB); }
-"*"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MUL); }
-"/"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), DIV); }
-"+"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), ADD); }
+"Simulation"                        { BEGIN(SIMULATION); BeginSimulationLexemeAction(createLexicalAnalyzerContext()); }
+<SIMULATION_NODES> "}"              { EndSimulationLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
-"("									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), OPEN_PARENTHESIS); }
-")"									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), CLOSE_PARENTHESIS); }
+<SIMULATION> "("                    { BEGIN(SIMULATION_PARAMS); BeginSimulationParamsLexemeAction(createLexicalAnalyzerContext()); }
+<SIMULATION_PARAMS> ")"             { EndSimulationParamsLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION); }
 
-[[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
+<SIMULATION_PARAMS> [a-zA-Z]+       { return ParamLexemeAction(createLexicalAnalyzerContext()); }
+<SIMULATION_PARAMS> "="             { return EqualsLexemeAction(createLexicalAnalyzerContext()); }
+<SIMULATION_PARAMS> \"[^"]+\"       { return StringLexemeAction(createLexicalAnalyzerContext()); }
+<SIMULATION_PARAMS> ","             { return CommaLexemeAction(createLexicalAnalyzerContext()); }
+<SIMULATION_PARAMS> [[:digit:]]+    { return IntegerLexemeAction(createLexicalAnalyzerContext()); }
+
+<SIMULATION> "{"                    { BEGIN(SIMULATION_NODES); BeginSimulationNodesLexemeAction(createLexicalAnalyzerContext()); }
 
 [[:space:]]+						{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 .									{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
