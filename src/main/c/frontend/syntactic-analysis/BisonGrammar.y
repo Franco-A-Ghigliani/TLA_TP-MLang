@@ -38,20 +38,55 @@
 */
 
 /** Terminals. */
+
+//DATA TYPES
 %token <integer> INTEGER
 %token <string> STRING
+
+//OPERATORS
 %token <token> EQUALS
 %token <token> COMMA
-%token <token> ADD
-%token <token> CLOSE_PARENTHESIS
-%token <token> DIV
-%token <token> MUL
 %token <token> OPEN_PARENTHESIS
-%token <token> SUB
-%token <token> PARAM
-%token <token> NODE
-
+%token <token> CLOSE_PARENTHESIS
+%token <token> TEMPLATE
+%token <token> SIM
+%token <token> COLON
+%token <token> OPEN_BRACKET
+%token <token> CLOSE_BRACKET
+%token <token> NEW
+%token <token> SEMI_COLON
+%token <token> RESOURCE_CONNECT
+%token <token> STATE_CONNECT
+%token <token> PERIOD
+%token <token> LESS_THAN
+%token <token> GREATER_THAN
+%token <token> PERCENTAGE
+%token <token> CONST
 %token <token> UNKNOWN
+
+//
+%token <string> PARAM
+%token <string> ID
+
+//TOKENS PARA SIM_PARAMS
+%token <token> SIMULATION_NAME
+%token <token> STEP_INTERVAL
+%token <token> STEPS_TO_SIMULATE
+
+//TOKENS PARA NODE_TYPES
+%token <token> SOURCE
+%token <token> DRAIN
+%token <token> POOL
+%token <token> GATE
+
+//TOKENS PARA NODE_PARAMS
+%token <token> NODE_LABEL
+%token <token> NODE_POSITION
+%token <token> NODE_ACTIVATION
+%token <token> RESOURCE_COLOR
+%token <token> NODE_ACTIVATION_MODE
+
+
 
 /** Non-terminals. */
 %type <constant> constant

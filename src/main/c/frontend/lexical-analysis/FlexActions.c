@@ -54,10 +54,11 @@ void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	}
 }
 
-void BeginSimulationLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+Token BeginSimulationLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	if (_logIgnoredLexemes) {
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	return SIM;
 }
 
 void EndSimulationLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
@@ -114,11 +115,6 @@ Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	return STRING;
 }
 
-Token NodeLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
-	return NODE;
-}
 
 Token EqualsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
@@ -130,6 +126,12 @@ Token CommaLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	lexicalAnalyzerContext->semanticValue->token = COMMA;
 	return COMMA;
+}
+
+Token TokenLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->token = token;
+	return token;
 }
 
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {

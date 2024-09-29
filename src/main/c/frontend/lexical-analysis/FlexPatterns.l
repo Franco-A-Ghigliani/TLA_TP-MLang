@@ -16,8 +16,15 @@
  */
 %x MULTILINE_COMMENT
 %x SIMULATION
-%x SIMULATION_PARAMS
 %x SIMULATION_NODES
+%x CONNECTION
+%x VECTOR
+%x FORMULA
+%x INSTANTIATION
+%x NODE
+%x CONSTANT
+%x SIMULATION_PARAMS
+%x TEMPLATE_INSTANTIATION
 %x PARAMS_VALUE
 
 /**
@@ -29,28 +36,46 @@
 
 %%
 
-"/*"								        { BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
-<MULTILINE_COMMENT>"*/"				        { EndMultilineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
-<MULTILINE_COMMENT>[^*]+			        { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<MULTILINE_COMMENT>.				        { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+"Simulation"                                { BEGIN(SIMULATION); return BeginSimulationLexemeAction(createLexicalAnalyzerContext()); }
+"Template"                                  { ; }
+":"                                         { ; }
+"Const"
 
-"Simulation"                                { BEGIN(SIMULATION); (createLexicalAnalyzerContext()); }
+
 <SIMULATION_NODES>"}"                       { EndSimulationLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+<SIMULATION_NODES>"Template"
+<SIMULATION_NODES>":"
+<SIMULATION_NODES>"}"
+<SIMULATION_NODES>[a-zA-Z]+
+<SIMULATION_NODES>"new"
 
 <SIMULATION>"("                             { BEGIN(SIMULATION_PARAMS); BeginSimulationParamsLexemeAction(createLexicalAnalyzerContext()); }
-<SIMULATION_PARAMS>")"                      { EndSimulationParamsLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION); }
+<SIMULATION>"{"
 
+<CONNECTION>"()"
+<CONNECTION>[a-zA-Z]+
+<CONNECTION>";"
+<CONNECTION>"=>"
+<CONNECTION>"=#"
+<CONNECTION>"."
+
+<PARAMS_VALUE>"("
+<PARAMS_VALUE>")"
+<PARAMS_VALUE>
+<PARAMS_VALUE>
+
+<SIMULATION_PARAMS>")"                      { EndSimulationParamsLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION); }
+<SIMULATION_PARAMS>"name"
+<SIMULATION_PARAMS>"stepInterval"
+<SIMULATION_PARAMS>"stepsToSimulate"
 <SIMULATION_PARAMS>[a-zA-Z]+                { return ParamLexemeAction(createLexicalAnalyzerContext()); }
 <SIMULATION_PARAMS>"="                      { BEGIN(PARAMS_VALUE); BeginParamsValueLexemeAction(createLexicalAnalyzerContext()); }
-<PARAMS_VALUE>[,)]                          { EndParamsValueLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION_PARAMS); }
-<PARAMS_VALUE>\"((\\\")|[^"])+\"            { return StringLexemeAction(createLexicalAnalyzerContext()); }
-<PARAMS_VALUE>[[:digit:]]+                  { return IntegerLexemeAction(createLexicalAnalyzerContext()); }
-<PARAMS_VALUE>[^",)]+                       { return NodeLexemeAction(createLexicalAnalyzerContext()); }
 
 <SIMULATION>"{"                             { BEGIN(SIMULATION_NODES); BeginSimulationNodesLexemeAction(createLexicalAnalyzerContext()); }
 
-[[:space:]]+						        { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-.									        { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+<*>"//"[^\n]*								{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<*>[[:space:]]+						        { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<*>.									    { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 
 %%
 
