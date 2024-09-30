@@ -25,24 +25,6 @@ void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerC
 void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-void BeginSimulationLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-void EndSimulationLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
-void BeginSimulationParamsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-void EndSimulationParamsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
-void BeginParamsValueLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-void EndParamsValueLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
-void BeginSimulationNodesLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
-Token ParamLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token EqualsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token CommaLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token NodeLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 #endif
