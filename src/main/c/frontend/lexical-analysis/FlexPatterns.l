@@ -14,7 +14,6 @@
  *
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
-%x MULTILINE_COMMENT
 %x CONST
 %x SIM
 %x SIM_PARAMS
@@ -37,17 +36,12 @@
 
 %%
 
-<*>"//"[^\n]*                               { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<*>"/*"								        { BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
-<MULTILINE_COMMENT>"*/"				        { EndMultilineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
-<MULTILINE_COMMENT>[^*]*			        { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<MULTILINE_COMMENT>.				        { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-
 "Simulation"                                { BEGIN(SIMULATION); }
 
 
-[[:space:]]+						        { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-.									        { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+<*>"//"[^\n]*								{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<*>[[:space:]]+						        { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<*>.									    { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 
 %%
 

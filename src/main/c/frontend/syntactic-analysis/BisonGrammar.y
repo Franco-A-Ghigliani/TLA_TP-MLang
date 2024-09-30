@@ -86,9 +86,9 @@
 %token <token> GREATER_THAN
 %token <token> PERCENTAGE
 %token <token> ADD
-%token <token> SUBSTRACT
-%token <token> MULTIPLY
-%token <token> DIVIDE 
+%token <token> SUB
+%token <token> MUL
+%token <token> DIV 
 
 
 %token <token> UNKNOWN
