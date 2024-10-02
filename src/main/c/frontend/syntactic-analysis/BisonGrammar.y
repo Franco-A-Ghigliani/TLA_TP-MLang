@@ -38,24 +38,47 @@
 */
 
 /** Terminals. */
+
+/** CONNECTION*/
+%token <token> RESOURCE_CONNECT
+%token <token> STATE_CONNECT
+%token <token> PERIOD
+
+/**FORMULA*/
+%token <token> LESS_THAN
+%token <token> GREATER_THAN
+%token <token> PERCENTAGE
+%token <token> ADD
+%token <token> SUBSTRACT
+%token <token> MULTIPLY
+%token <token> DIVIDE
+
+/**INITIAL*/
 %token <token> SIMULATION 
+%token <token> CONSTANT_KEY
+
+/**INITIAL + SIM_NODES*/
 %token <token> TEMPLATE
 %token <token> COLON
-%token <token> OPEN_PARENTHESIS
-%token <token> CLOSE_PARENTHESIS 
-%token <token> OPEN_BRACKET
-%token <token> CLOSE_BRACKET
-%token <string> SIMULATION_NAME 
-%token <token> STEP_INTERVAL
-%token <token> STEPS_TO_SIMULATE
+
+/*NODE_PARAM_VALUE*/
+%token <token> NODE_ACTIVATION_ENUM
+%token <token> COLOR
+%token <token> NODE_ACTIVATION_MODE_ENUM
+%token <token> BOOLEAN
+/*NODE_PARAM_VALUE + CONNECTION + INSTANCIATION + CONST*/
+%token <token> SEMI_COLON
+/*NODE_PARAM_VALUE + SIM_PARAM_VALUE*/
+%token <string> STRING
+/*NODE_PARAM_VALUE, SIM_PARAM_VALUE, VECTOR, FORMULA, CONST*/
+%token <integer> INTEGER
+
+/*NODE_PARAMS*/
 %token <token> NODE_LABEL
 %token <token> NODE_POSITION
 %token <token> NODE_ACTIVATION 
 %token <token> NODE_RESOURCE_COLOR 
 %token <token> NODE_ACTIVATION_MODE 
-%token <token> NODE_ACTIVATION_ENUM
-%token <token> COLOR
-%token <token> NODE_ACTIVATION_MODE_ENUM
 %token <token> POOL_INITIAL_RESOURCES
 %token <token> POOL_INITIAL_RESOURCES_COLOR
 %token <token> POOL_CAPACITY
@@ -64,12 +87,10 @@
 %token <token> GATE_RANDOM_DISTRIBUTION
 %token <token> CONVERTER_MULTICONVERSION
 %token <token> DELAY_QUEUE
-%token <token> BOOLEAN
+/*NODE_PARAMS + SIM_PARAMS*/
 %token <token> EQUALS
-%token <token> STRING
-%token <token> COMMA
-%token <token> INTEGER
-%token <token> ID
+
+/*SIM_NODES*/
 %token <token> SOURCE
 %token <token> DRAIN
 %token <token> POOL
@@ -78,25 +99,30 @@
 %token <token> DELAY
 %token <token> END_CONDITION
 %token <token> NEW
-%token <token> SEMI_COLON
-%token <token> RESOURCE_CONNECT
-%token <token> STATE_CONNECT
-%token <token> PERIOD
-%token <token> LESS_THAN
-%token <token> GREATER_THAN
-%token <token> PERCENTAGE
-%token <token> ADD
-%token <token> SUB
-%token <token> MUL
-%token <token> DIV 
+/*SIM_NODES + FORMULA + NODE_PARAMS*/
+%token <token> CLOSE_BRACKET
+
+/*SIM_PARAM_VALUE + VECTOR*/
+%token <token> COMMA
+
+/*SIM_PARAMS*/
+%token <token> SIMULATION_NAME 
+%token <token> STEP_INTERVAL
+%token <token> STEPS_TO_SIMULATE
+/*SIM_PARAMS + FORMULA + VECTOR*/
+%token <token> CLOSE_PARENTHESIS 
+
+/*SIM + CONNECTION + INSTANCIATION + NODE*/
+%token <token> OPEN_BRACKET
+/*SIM + NODE_PARAM_VALUE + FORMULA*/
+%token <token> OPEN_PARENTHESIS
+/*SIM + NODE + INSTANCIATION + SIM_NODES + CONNECTION + FORMULA*/
+%token <token> ID
 
 
 %token <token> UNKNOWN
 
-/** Non-terminals. */
-%type <constant> constant
-%type <expression> expression
-%type <factor> factor
+/** TODO: Non-terminals. */
 %type <program> program
 
 /**
@@ -111,21 +137,6 @@
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: expression													{ $$ = ExpressionProgramSemanticAction(currentCompilerState(), $1); }
+program: INTEGER														{}
 	;
-
-expression: expression[left] ADD expression[right]					{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| expression[left] DIV expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| expression[left] MUL expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| expression[left] SUB expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| factor														{ $$ = FactorExpressionSemanticAction($1); }
-	;
-
-factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS				{ $$ = ExpressionFactorSemanticAction($2); }
-	| constant														{ $$ = ConstantFactorSemanticAction($1); }
-	;
-
-constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
-	;
-
 %%
