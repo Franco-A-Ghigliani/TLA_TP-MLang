@@ -16,6 +16,9 @@ void shutdownAbstractSyntaxTreeModule();
 
 typedef enum ExpressionType ExpressionType;
 typedef enum FactorType FactorType;
+typedef enum Activation Activation;
+typedef enum ActivationMode ActivationMode;
+typedef enum Color Color;
 
 typedef struct Constant Constant;
 typedef struct Expression Expression;
@@ -25,6 +28,29 @@ typedef struct Program Program;
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
+
+enum Activation {
+	AUTOMATIC,
+	ON_START,
+	PASSIVE,
+	INTERACTIVE
+};
+
+enum ActivationMode {
+	PULL_ANY,
+	PULL_ALL,
+	PUSH_ANY,
+	PUSH_ALL
+};
+
+
+enum Color {
+	RED,
+	BLACK,
+	BLUE,
+	ORANGE,
+	GREEN
+};
 
 enum ExpressionType {
 	ADDITION,

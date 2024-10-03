@@ -13,6 +13,10 @@
 	int integer;
 	Token token;
 	char* string;
+	Activation activation;
+	ActivationMode activationMode;
+	Color color;
+	boolean bool;
 
 	/** Non-terminals. */
 
