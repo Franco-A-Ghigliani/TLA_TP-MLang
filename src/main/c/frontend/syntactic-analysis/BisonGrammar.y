@@ -24,6 +24,15 @@
 	Expression * expression;
 	Factor * factor;
 	Program * program;
+	Vector * vector;
+	Simulation * simulation;
+	SimulationParams * simParams;
+	SimulationParam * simParam;
+	SimulationName * simName;
+	SimulationStepsToSimulate * simStepsToSimulate;
+	SimulationStepInterval * simStepInterval;
+	SimulationNodes * simNodes;
+	SimulationTemplate * simTemplate;
 }
 
 /**
@@ -128,6 +137,15 @@
 
 /** TODO: Non-terminals. */
 %type <program> program
+%type <simulation> simulation
+%type <simParams> simParams
+%type <simParam> simParam
+%type <simName> simName
+%type <simStepsToSimulate> simStepsToSimulate
+%type <simStepInterval> simStepInterval
+%type <simNodes> simNodes
+%type <vector> vector
+%type <simTemplate> simTemplate
 
 /**
  * Precedence and associativity.
@@ -141,6 +159,30 @@
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: INTEGER														{}
-	;
+program: simulation program																{}
+	|	simTemplate program																{}
+	|	%empty																			{}
+
+simTemplate: TEMPLATE COLON SIMULATION ID OPEN_PARENTHESIS CLOSE_PARENTHESIS simNodes	{}
+
+simulation: SIMULATION simParams simNodes												{}
+
+simParams: OPEN_PARENTHESIS simParam COMMA simParam COMMA simParam CLOSE_PARENTHESIS	{}
+	|	OPEN_PARENTHESIS simParam COMMA simParam CLOSE_PARENTHESIS						{}
+	|	OPEN_PARENTHESIS simParam CLOSE_PARENTHESIS										{}
+	|	OPEN_PARENTHESIS CLOSE_PARENTHESIS												{}
+
+simParam: simName																		{}
+	|	simStepsToSimulate																{}
+	|	simStepInterval																	{}
+
+simName: SIMULATION_NAME EQUALS STRING[name]											{}
+
+simStepsToSimulate: STEPS_TO_SIMULATE EQUALS INTEGER[steps]								{}
+
+simStepInterval: STEP_INTERVAL EQUALS INTEGER[interval]									{}
+
+simNodes: OPEN_BRACKET CLOSE_BRACKET													{}
+
+vector: OPEN_PARENTHESIS INTEGER[x] COMMA INTEGER[y] CLOSE_PARENTHESIS					{$$ = VectorSemanticAction($x, $y);}
 %%

@@ -14,16 +14,27 @@ void shutdownAbstractSyntaxTreeModule();
  * This typedefs allows self-referencing types.
  */
 
-typedef enum ExpressionType ExpressionType;
-typedef enum FactorType FactorType;
 typedef enum Activation Activation;
 typedef enum ActivationMode ActivationMode;
 typedef enum Color Color;
 
-typedef struct Constant Constant;
-typedef struct Expression Expression;
-typedef struct Factor Factor;
+typedef enum SimParamType SimParamType;
+
+
+typedef struct Vector Vector;
+
 typedef struct Program Program;
+typedef struct Simulation Simulation;
+typedef struct SimulationTemplate SimulationTemplate;
+
+typedef struct SimulationParams SimulationParams;
+typedef struct SimulationParam SimulationParam;
+typedef struct SimulationName SimulationName;
+typedef struct SimulationStepsToSimulate SimulationStepsToSimulate;
+typedef struct SimulationStepInterval SimulationStepInterval;
+
+typedef struct SimulationNodes SimulationNodes;
+typedef struct Node Node;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
@@ -52,52 +63,73 @@ enum Color {
 	GREEN
 };
 
-enum ExpressionType {
-	ADDITION,
-	DIVISION,
-	FACTOR,
-	MULTIPLICATION,
-	SUBTRACTION
+enum SimParamType {
+	NAME,
+	STEPS,
+	STEP_INTERVAL
 };
 
-enum FactorType {
-	CONSTANT,
-	EXPRESSION
+
+struct Vector {
+	int x;
+	int y;
 };
 
-struct Constant {
-	int value;
+struct Node {
+	
 };
 
-struct Factor {
+struct SimulationName {
+	char* name;
+};
+
+
+struct SimulationStepsToSimulate {
+	int steps;
+};
+
+
+struct SimulationStepInterval {
+	int interval;
+};
+
+struct SimulationParam {
 	union {
-		Constant * constant;
-		Expression * expression;
+		SimulationName * name;
+		SimulationStepsToSimulate * steps;
+		SimulationStepInterval * stepInterval;
 	};
-	FactorType type;
+	SimParamType type;
 };
 
-struct Expression {
-	union {
-		Factor * factor;
-		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
-		};
-	};
-	ExpressionType type;
+struct SimulationParams {
+	SimulationParam* name;
+	SimulationParam* steps;
+	SimulationParam* stepInterval;
 };
+
+struct SimulationNodes {
+	Node* firstNode;
+};
+
+struct Simulation {
+	SimulationParams * params;
+	SimulationNodes * nodes;
+	Simulation * next;
+};
+
+struct SimulationTemplate {
+	SimulationNodes * nodes;
+};
+
 
 struct Program {
-	Expression * expression;
+	Simulation* firstSimulation;
 };
 
 /**
  * Node recursive destructors.
  */
-void releaseConstant(Constant * constant);
-void releaseExpression(Expression * expression);
-void releaseFactor(Factor * factor);
 void releaseProgram(Program * program);
 
 #endif
