@@ -26,13 +26,20 @@
 	Program * program;
 	Vector * vector;
 	Simulation * simulation;
+	SimulationWrapper * simWrapper;
 	SimulationParams * simParams;
 	SimulationParam * simParam;
 	SimulationName * simName;
 	SimulationStepsToSimulate * simStepsToSimulate;
 	SimulationStepInterval * simStepInterval;
-	SimulationNodes * simNodes;
+	SimulationNode * simNode;
 	SimulationTemplate * simTemplate;
+	GenericValue * genericValue;
+	SimElements * simElements;
+	SimConnection * simConnection;
+	NodeParams * nodeParams;
+	NodeReference * nodeReference;
+	Formula * formula;
 }
 
 /**
@@ -75,10 +82,10 @@
 %token <token> COLON
 
 /*NODE_PARAM_VALUE*/
-%token <token> NODE_ACTIVATION_ENUM
-%token <token> COLOR
-%token <token> NODE_ACTIVATION_MODE_ENUM
-%token <token> BOOLEAN
+%token <activation> NODE_ACTIVATION_ENUM
+%token <color> COLOR
+%token <activationMode> NODE_ACTIVATION_MODE_ENUM
+%token <bool> BOOLEAN
 /*NODE_PARAM_VALUE + CONNECTION + INSTANCIATION + CONST*/
 %token <token> SEMI_COLON
 /*NODE_PARAM_VALUE + SIM_PARAM_VALUE*/
@@ -130,8 +137,7 @@
 /*SIM + NODE_PARAM_VALUE + FORMULA*/
 %token <token> OPEN_PARENTHESIS
 /*SIM + NODE + INSTANCIATION + SIM_NODES + CONNECTION + FORMULA*/
-%token <token> ID
-
+%token <string> ID
 
 %token <token> UNKNOWN
 
@@ -140,13 +146,15 @@
 %type <simulation> simulation
 %type <simParams> simParams
 %type <simParam> simParam
-%type <simName> simName
-%type <simStepsToSimulate> simStepsToSimulate
-%type <simStepInterval> simStepInterval
-%type <simNodes> simNodes
+%type <simNode> simNode
 %type <vector> vector
 %type <simTemplate> simTemplate
-
+%type <constant> constant
+%type <simElements> simElements
+%type <simConnection> simConnection
+%type <nodeParams> nodeParams
+%type <nodeReference> nodeReference
+%type <formula> formula
 /**
  * Precedence and associativity.
  *
@@ -159,30 +167,103 @@
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: simulation program																{}
-	|	simTemplate program																{}
+
+//----------------------------------------SIM WRAPPER--------------------------------------
+//EVALUAR SI QUIERO EL EMPTY, YA QUE PODRIAN INGRESAR PROGRAMAS VACIOS O SIN SIMULATION PRINCIPAL
+//PERO ASI SE ACEPTA CUALQUIER COMBINACION Y ORDEN
+program:	simWrapper																	{}
+	;
+
+simWrapper: constant simWrapper														    {}
+	|		simTemplate simWrapper														{}
+	|		simulation simWrapper														{}
+	|		%empty																		{}
+	;
+
+constant: 	CONSTANT_KEY ID EQUALS INTEGER												{}
+	|		CONSTANT_KEY ID EQUALS STRING												{}
+	;
+
+simTemplate: TEMPLATE COLON SIMULATION ID OPEN_PARENTHESIS CLOSE_PARENTHESIS OPEN_BRACKET simElements CLOSE_BRACKET	{}
+	;
+
+simulation: SIMULATION OPEN_PARENTHESIS simParams CLOSE_PARENTHESIS OPEN_BRACKET simElements CLOSE_BRACKET					{}
+	;
+
+simElements: simNode simElements  														{}
+	| TEMPLATE COLON simNode simElements												{}
+	| simConnection simElements															{}
+	| %empty																			{}
+	;
+//---------------------------------------------------------------------------------------
+//------------------------------SIM PARAMS-----------------------------------------------
+simParams: simParam COMMA simParam COMMA simParam 										{}
+	|	simParam COMMA simParam 														{}
+	|	simParam 																		{}
 	|	%empty																			{}
+	;
 
-simTemplate: TEMPLATE COLON SIMULATION ID OPEN_PARENTHESIS CLOSE_PARENTHESIS simNodes	{}
+simParam: SIMULATION_NAME EQUALS STRING[name]											{}
+	|	STEPS_TO_SIMULATE EQUALS INTEGER[steps]											{}
+	|	STEP_INTERVAL EQUALS INTEGER[interval]											{}
+	;
 
-simulation: SIMULATION simParams simNodes												{}
+//----------------------------------------------------------------------------------------
+//-------------------------------------SIM NODE-------------------------------------------
+simNode: NEW ID OPEN_BRACKET nodeParams CLOSE_BRACKET									{}
+	| SOURCE ID OPEN_BRACKET nodeParams CLOSE_BRACKET									{}
+	| GATE ID OPEN_BRACKET nodeParams CLOSE_BRACKET										{}
+	| DRAIN ID OPEN_BRACKET nodeParams CLOSE_BRACKET									{}
+	| POOL ID OPEN_BRACKET nodeParams CLOSE_BRACKET										{}
+	| CONVERTER ID OPEN_BRACKET nodeParams CLOSE_BRACKET								{}
+	| DELAY ID OPEN_BRACKET nodeParams CLOSE_BRACKET									{}
+	| END_CONDITION ID OPEN_BRACKET nodeParams CLOSE_BRACKET							{}
+	;
 
-simParams: OPEN_PARENTHESIS simParam COMMA simParam COMMA simParam CLOSE_PARENTHESIS	{}
-	|	OPEN_PARENTHESIS simParam COMMA simParam CLOSE_PARENTHESIS						{}
-	|	OPEN_PARENTHESIS simParam CLOSE_PARENTHESIS										{}
-	|	OPEN_PARENTHESIS CLOSE_PARENTHESIS												{}
+nodeParams: nodeParam 																	{}
+	| nodeParam	SEMI_COLON nodeParams													{}
+	;
 
-simParam: simName																		{}
-	|	simStepsToSimulate																{}
-	|	simStepInterval																	{}
+nodeParam: NODE_LABEL EQUALS STRING														{}
+	| NODE_POSITION EQUALS vector														{}
+	| GATE_RANDOM_DISTRIBUTION EQUALS BOOLEAN											{}
+	| NODE_ACTIVATION EQUALS NODE_ACTIVATION_ENUM										{}
+	| NODE_ACTIVATION_MODE EQUALS NODE_ACTIVATION_MODE_ENUM								{}
+	| POOL_INITIAL_RESOURCES EQUALS INTEGER												{}
+	| NODE_RESOURCE_COLOR EQUALS COLOR													{}
+	| POOL_INITIAL_RESOURCES_COLOR EQUALS COLOR											{}
+	| POOL_CAPACITY EQUALS INTEGER														{}
+	| POOL_NUMBER_DISPLAY_THRESHOLD EQUALS INTEGER										{}
+	| POOL_DRAIN_ON_OVERFLOW EQUALS BOOLEAN												{}
+	| CONVERTER_MULTICONVERSION EQUALS BOOLEAN											{}
+	| DELAY_QUEUE EQUALS BOOLEAN														{}
+	;
 
-simName: SIMULATION_NAME EQUALS STRING[name]											{}
+//--------------------------------------------------------------------------------------------
+//---------------------------------------SIM CONNECTION---------------------------------------
+simConnection: nodeReference RESOURCE_CONNECT nodeReference OPEN_BRACKET formula CLOSE_BRACKET		{}
+	| nodeReference STATE_CONNECT nodeReference OPEN_BRACKET formula CLOSE_BRACKET					{}
+	;
 
-simStepsToSimulate: STEPS_TO_SIMULATE EQUALS INTEGER[steps]								{}
+formula: LESS_THAN formula																{}
+	| GREATER_THAN formula																{}
+	| INTEGER formula																	{}
+	| ID formula																		{}
+	| PERCENTAGE formula																{}
+	| SUBSTRACT formula																	{}
+	| ADD formula																		{}
+	| MULTIPLY formula 																	{}
+	| DIVIDE formula																	{}
+	| ID 																				{}
+	| INTEGER																			{}
+	;
 
-simStepInterval: STEP_INTERVAL EQUALS INTEGER[interval]									{}
-
-simNodes: OPEN_BRACKET CLOSE_BRACKET													{}
-
+nodeReference: ID 																		{} 
+	| ID PERIOD nodeReference 															{}
+	;
+	
+//----------------------------------------------------------------------------------------
+//-------------------------------VECTOR---------------------------------------------------
 vector: OPEN_PARENTHESIS INTEGER[x] COMMA INTEGER[y] CLOSE_PARENTHESIS					{$$ = VectorSemanticAction($x, $y);}
+	;
 %%

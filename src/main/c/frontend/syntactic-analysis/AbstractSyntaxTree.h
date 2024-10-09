@@ -17,25 +17,28 @@ void shutdownAbstractSyntaxTreeModule();
 typedef enum Activation Activation;
 typedef enum ActivationMode ActivationMode;
 typedef enum Color Color;
-
+typedef enum ValueType ValueType;
+typedef enum SimWrapperType SimWrapperType;
 typedef enum SimParamType SimParamType;
-
+typedef enum NodeParamType NodeParamType;
+typedef enum SimElementsType SimElementsType;
+typedef enum FormulaType FormulaType;
 
 typedef struct Vector Vector;
-
 typedef struct Program Program;
 typedef struct Simulation Simulation;
 typedef struct SimulationTemplate SimulationTemplate;
-
 typedef struct SimulationParams SimulationParams;
 typedef struct SimulationParam SimulationParam;
-typedef struct SimulationName SimulationName;
-typedef struct SimulationStepsToSimulate SimulationStepsToSimulate;
-typedef struct SimulationStepInterval SimulationStepInterval;
-
-typedef struct SimulationNodes SimulationNodes;
-typedef struct Node Node;
-
+typedef struct SimulationWrapper SimulationWrapper;
+typedef struct Constant Constant;
+typedef struct SimElements SimElements;
+typedef struct SimConnection SimConnection;
+typedef struct NodeParams NodeParams;
+typedef struct NodeParam NodeParam;
+typedef struct SimulationNode SimulationNode;
+typedef struct NodeReference NodeReference;
+typedef struct Formula Formula;
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
@@ -45,6 +48,35 @@ enum Activation {
 	ON_START,
 	PASSIVE,
 	INTERACTIVE
+};
+
+enum ValueType {
+	STRING,
+	INTEGER
+};
+
+enum NodeParamType{
+	NODE_LABEL,
+	NODE_POSITION,
+	GATE_RANDOM_DISTRIBUTION,
+	NODE_ACTIVATION,
+	NODE_ACTIVATION_MODE,
+	POOL_INITIAL_RESOURCES,
+	NODE_RESOURCE_COLOR,
+	POOL_INITIAL_RESOURCES_COLOR,
+	POOL_CAPACITY,
+	POOL_NUMBER_DISPLAY_THRESHOLD,
+	POOL_DRAIN_ON_OVERFLOW,
+	CONVERTER_MULTICONVERSION,
+	DELAY_QUEUE
+};
+
+enum FormulaType {
+	ADDITION,
+	DIVISION,
+	FACTOR,
+	MULTIPLICATION,
+	SUBTRACTION
 };
 
 enum ActivationMode {
@@ -63,68 +95,129 @@ enum Color {
 	GREEN
 };
 
+enum SimWrapperType{
+	CONSTANT,
+	SIMULATION_TEMPLATE,
+	SIMULATION_NODE
+};
+
 enum SimParamType {
 	NAME,
 	STEPS,
 	STEP_INTERVAL
 };
 
-
-struct Vector {
-	int x;
-	int y;
+enum SimElementsType{
+	CONNECTION,
+	NODE
 };
 
-struct Node {
-	
+//---------------------------------------PROGRAM--------------------------------------
+struct Program {
+	SimulationWrapper * simulationWrapper;
 };
 
-struct SimulationName {
-	char* name;
-};
-
-
-struct SimulationStepsToSimulate {
-	int steps;
-};
-
-
-struct SimulationStepInterval {
-	int interval;
-};
-
-struct SimulationParam {
+struct SimulationWrapper {
 	union {
-		SimulationName * name;
-		SimulationStepsToSimulate * steps;
-		SimulationStepInterval * stepInterval;
+		Constant * name;
+		SimulationTemplate * simulationTemplate;
+		Simulation * simulation;
 	};
-	SimParamType type;
+	SimWrapperType type;
+	SimulationWrapper * nextSimulationWrapper;
 };
 
+struct Constant {
+	union {
+		char * string;
+		int value;
+	};
+	ValueType type;
+};
+
+struct SimulationTemplate {
+	SimElements * simElements;
+};
+
+struct Simulation {
+	SimulationParams * params;
+	SimElements * simElements;
+};
+
+struct SimElements {
+	union {
+		SimConnection * connection; 
+		SimulationNode * node;
+	};
+	SimElementsType type;
+	SimElements * next;
+};
+
+//------------------------------------SIM NODE-----------------------------------
+struct SimulationNode {
+	NodeParams * nodeParams;
+};
+
+struct NodeParams {
+	NodeParam * nodeParam;
+	NodeParams * nextParams;
+};
+
+struct NodeParam {
+	union {
+		Activation activation;
+		ActivationMode activationMode;
+		char * string;
+		int value;
+		Vector * vector;
+		Color color;
+		boolean boolean;
+	};
+	NodeParamType type;
+};
+
+//----------------------------------------SIM CONNECTION--------------------------------
+struct SimConnection {
+	NodeReference * from;
+	NodeReference * to;
+	Formula * formula;
+};
+
+struct NodeReference {
+	char * reference;
+	NodeReference * next;
+};
+
+struct Formula {
+	union {
+		char * id;
+		int value;
+	};
+	FormulaType type;
+	Formula * next;
+};
+
+
+//------------------------------------------------SIM PARAMS----------------------------
 struct SimulationParams {
 	SimulationParam* name;
 	SimulationParam* steps;
 	SimulationParam* stepInterval;
 };
 
-struct SimulationNodes {
-	Node* firstNode;
+//creeria que el simParamType es opcional, ya que el nombre en simParams te lo dice todo
+struct SimulationParam {
+	union {
+		char * string;
+		int value;
+	};
+	SimParamType type;
 };
 
-struct Simulation {
-	SimulationParams * params;
-	SimulationNodes * nodes;
-	Simulation * next;
-};
-
-struct SimulationTemplate {
-	SimulationNodes * nodes;
-};
-
-
-struct Program {
-	Simulation* firstSimulation;
+//------------------------------------------VECTOR----------------------------------------
+struct Vector {
+	int x;
+	int y;
 };
 
 /**
