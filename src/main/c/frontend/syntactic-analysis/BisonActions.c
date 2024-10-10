@@ -46,6 +46,23 @@ Program * ExpressionProgramSemanticAction(CompilerState * compilerState) {
 	return program;
 }
 
+Factor * IntegerFactorSemanticAction(int value){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Factor * factor = calloc(1, sizeof(Factor));
+	factor ->value = value;
+	factor->type = INTEGER;
+	return factor;
+
+}
+
+NodeReference * NodeReferenceSemanticAction(char * id, NodeReference * next){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	NodeReference * nodeReference = calloc(1, sizeof(NodeReference));
+	nodeReference ->reference = id;
+	nodeReference ->next=next;
+	return nodeReference;
+}
+
 Vector * VectorSemanticAction(int x, int y){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Vector * vector = calloc(1, sizeof(Vector));

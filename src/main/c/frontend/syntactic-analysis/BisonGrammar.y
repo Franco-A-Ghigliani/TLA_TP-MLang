@@ -241,29 +241,29 @@ nodeParam: NODE_LABEL EQUALS STRING														{}
 
 //--------------------------------------------------------------------------------------------
 //---------------------------------------SIM CONNECTION---------------------------------------
-simConnection: nodeReference RESOURCE_CONNECT nodeReference OPEN_BRACKET formula CLOSE_BRACKET		{}
-	| nodeReference STATE_CONNECT nodeReference OPEN_BRACKET formula CLOSE_BRACKET					{}
+simConnection: nodeReference[from] RESOURCE_CONNECT nodeReference[to] OPEN_BRACKET formula[formula] CLOSE_BRACKET		{$$ = ArithmeticFormulaSemanticAction($from, $to, $formula);}
+	| nodeReference[from] STATE_CONNECT nodeReference[to] OPEN_BRACKET formula[formula] CLOSE_BRACKET					{$$ = ArithmeticFormulaSemanticAction($from, $to, $formula);}
 	;
 
-formula: LESS_THAN expression																		{}
-	| GREATER_THAN expression																		{}
-	| expression PERCENTAGE 																		{}
-	| expression 																					{}
+formula: LESS_THAN expression[exp]																		{$$ = ArithmeticFormulaSemanticAction($exp, LESS_THAN);}
+	| GREATER_THAN expression[exp]																		{$$ = ArithmeticFormulaSemanticAction($exp, GREATER_THAN);}
+	| expression[exp] PERCENTAGE 																		{$$ = ArithmeticFormulaSemanticAction($exp, LESS_THAN);}
+	| expression[exp] 																					{$$ = ArithmeticFormulaSemanticAction($exp, EXPRESSION);}
 	;
 
-expression: expression SUBSTRACT expression															{}
-	| expression ADD expression																		{}
-	| expression MULTIPLY expression 																{}
-	| expression DIVIDE expression																	{}
-	| factor																						{}
+expression: expression[left] SUBSTRACT expression[right]														{$$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION);}
+	| expression[left] ADD expression[right]																	{$$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION);}
+	| expression[left] MULTIPLY expression[right]																{$$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION);}
+	| expression[left] DIVIDE expression[right]	 																{$$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION);}
+	| factor																									{$$ = factorExpressionSemanticAction($1);}
 	;
 
-factor: ID																				{}
-	INTEGER																				{}
+factor: ID																				{$$ = IdFactorSemanticAction($1);}
+	| INTEGER																			{$$ = IntegerFactorSemanticAction($1);}
 	;
 
-nodeReference: ID 																		{} 
-	| ID PERIOD nodeReference 															{}
+nodeReference: ID 																		{$$ = NodeReferenceSemanticAction($1, null);} 
+	| ID PERIOD nodeReference 															{$$ = NodeReferenceSemanticAction($1, $3);}
 	;
 	
 //----------------------------------------------------------------------------------------
