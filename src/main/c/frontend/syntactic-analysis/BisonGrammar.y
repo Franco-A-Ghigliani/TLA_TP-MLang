@@ -211,9 +211,9 @@ templateInstance: NEW ID[id] ID[instanceId] OPEN_BRACKET nodeParams[params] CLOS
 //---------------------------------------------------------------------------------------
 //------------------------------SIM PARAMS-----------------------------------------------
 simParams: simParam[param1] COMMA simParam[param2] COMMA simParam[param3] 				{$$ = simParamsSemanticAction($param1, $param2, $param3);}
-	|	simParam[param1] COMMA simParam[param2] 										{$$ = simParamsSemanticAction($param1, $param2, null);}
-	|	simParam[param] 																{$$ = simParamsSemanticAction($param1, null, null);}
-	|	%empty																			{$$ = simParamsSemanticAction(null, null, null);}
+	|	simParam[param1] COMMA simParam[param2] 										{$$ = simParamsSemanticAction($param1, $param2, NULL);}
+	|	simParam[param] 																{$$ = simParamsSemanticAction($param1, NULL, NULL);}
+	|	%empty																			{$$ = simParamsSemanticAction(NULL, NULL, NULL);}
 	;
 
 simParam: SIMULATION_NAME EQUALS STRING[name]											{$$ = nameSimParamSemanticAction($name);}
@@ -223,16 +223,16 @@ simParam: SIMULATION_NAME EQUALS STRING[name]											{$$ = nameSimParamSemant
 
 //----------------------------------------------------------------------------------------
 //-------------------------------------SIM NODE-------------------------------------------
-simNode: SOURCE ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ = nodeSemanticAction($params, SOURCE);}
-	| GATE ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET										{$$ = nodeSemanticAction($params, GATE);}
-	| DRAIN ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET									{$$ = nodeSemanticAction($params, DRAIN);}
-	| POOL ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET										{$$ = nodeSemanticAction($params, POOL);}
-	| CONVERTER ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ = nodeSemanticAction($params, CONVERTER);}
-	| DELAY ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET									{$$ = nodeSemanticAction($params, DELAY);}
-	| END_CONDITION ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET							{$$ = nodeSemanticAction($params, END_CONDITION);}
+simNode: SOURCE ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ = nodeSemanticAction($id, $params, SOURCE);}
+	| GATE ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET										{$$ = nodeSemanticAction($id, $params, GATE);}
+	| DRAIN ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET									{$$ = nodeSemanticAction($id, $params, DRAIN);}
+	| POOL ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET										{$$ = nodeSemanticAction($id, $params, POOL);}
+	| CONVERTER ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ = nodeSemanticAction($id, $params, CONVERTER);}
+	| DELAY ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET									{$$ = nodeSemanticAction($id, $params, DELAY);}
+	| END_CONDITION ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET							{$$ = nodeSemanticAction($id, $params, END_CONDITION);}
 	;
 
-nodeParams: nodeParam[param] 																	{$$ = nodeParamsSemanticAction($param, null);}
+nodeParams: nodeParam[param] 																	{$$ = nodeParamsSemanticAction($param, NULL);}
 	| nodeParam[param]	SEMI_COLON nodeParams[next]												{$$ = nodeParamsSemanticAction($param, $next);}
 	;
 
@@ -253,33 +253,33 @@ nodeParam: NODE_LABEL EQUALS STRING[val]														{$$ = labelParamSemanticAc
 
 //--------------------------------------------------------------------------------------------
 //---------------------------------------SIM CONNECTION---------------------------------------
-simConnection: nodeReference[from] RESOURCE_CONNECT nodeReference[to] OPEN_BRACKET formula[formula] CLOSE_BRACKET		{$$ = ArithmeticFormulaSemanticAction($from, $to, $formula);}
-	| nodeReference[from] STATE_CONNECT nodeReference[to] OPEN_BRACKET formula[formula] CLOSE_BRACKET					{$$ = ArithmeticFormulaSemanticAction($from, $to, $formula);}
+simConnection: nodeReference[from] RESOURCE_CONNECT nodeReference[to] OPEN_BRACKET formula[formula] CLOSE_BRACKET		{$$ = connectionSemanticAction($from, $to, $formula, RESOURCE);}
+	| nodeReference[from] STATE_CONNECT nodeReference[to] OPEN_BRACKET formula[formula] CLOSE_BRACKET					{$$ = connectionSemanticAction($from, $to, $formula, STATE);}
 	;
 
-formula: LESS_THAN expression[exp]																		{$$ = ArithmeticFormulaSemanticAction($exp, LESS_THAN);}
-	| GREATER_THAN expression[exp]																		{$$ = ArithmeticFormulaSemanticAction($exp, GREATER_THAN);}
-	| expression[exp] PERCENTAGE 																		{$$ = ArithmeticFormulaSemanticAction($exp, LESS_THAN);}
-	| expression[exp] 																					{$$ = ArithmeticFormulaSemanticAction($exp, EXPRESSION);}
+formula: LESS_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN);}
+	| GREATER_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, GREATER_THAN);}
+	| expression[exp] PERCENTAGE 																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN);}
+	| expression[exp] 																					{$$ = arithmeticFormulaSemanticAction($exp, EXPRESSION);}
 	;
 
-expression: expression[left] SUBSTRACT expression[right]														{$$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION);}
-	| expression[left] ADD expression[right]																	{$$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION);}
-	| expression[left] MULTIPLY expression[right]																{$$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION);}
-	| expression[left] DIVIDE expression[right]	 																{$$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION);}
+expression: expression[left] SUBSTRACT expression[right]														{$$ = arithmeticExpressionSemanticAction($left, $right, SUBTRACTION);}
+	| expression[left] ADD expression[right]																	{$$ = arithmeticExpressionSemanticAction($left, $right, ADDITION);}
+	| expression[left] MULTIPLY expression[right]																{$$ = arithmeticExpressionSemanticAction($left, $right, MULTIPLICATION);}
+	| expression[left] DIVIDE expression[right]	 																{$$ = arithmeticExpressionSemanticAction($left, $right, DIVISION);}
 	| factor																									{$$ = factorExpressionSemanticAction($1);}
 	;
 
-factor: ID																				{$$ = IdFactorSemanticAction($1);}
-	| INTEGER																			{$$ = IntegerFactorSemanticAction($1);}
+factor: ID																				{$$ = idFactorSemanticAction($1);}
+	| INTEGER																			{$$ = integerFactorSemanticAction($1);}
 	;
 
-nodeReference: ID 																		{$$ = NodeReferenceSemanticAction($1, null);} 
-	| ID PERIOD nodeReference 															{$$ = NodeReferenceSemanticAction($1, $3);}
+nodeReference: ID 																		{$$ = nodeReferenceSemanticAction($1, NULL);} 
+	| ID PERIOD nodeReference 															{$$ = nodeReferenceSemanticAction($1, $3);}
 	;
 	
 //----------------------------------------------------------------------------------------
 //-------------------------------VECTOR---------------------------------------------------
-vector: OPEN_PARENTHESIS INTEGER[x] COMMA INTEGER[y] CLOSE_PARENTHESIS					{$$ = VectorSemanticAction($x, $y);}
+vector: OPEN_PARENTHESIS INTEGER[x] COMMA INTEGER[y] CLOSE_PARENTHESIS					{$$ = vectorSemanticAction($x, $y);}
 	;
 %%

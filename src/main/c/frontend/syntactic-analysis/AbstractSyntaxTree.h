@@ -24,6 +24,7 @@ typedef enum NodeType NodeType;
 typedef enum NodeParamType NodeParamType;
 typedef enum SimElementsType SimElementsType;
 typedef enum TemplateType TemplateType;
+typedef enum ConnectionType ConnectionType;
 typedef enum FormulaType FormulaType;
 typedef enum ExpressionType ExpressionType;
 
@@ -75,6 +76,12 @@ enum NodeParamType{
 	POOL_DRAIN_ON_OVERFLOW,
 	CONVERTER_MULTICONVERSION,
 	DELAY_QUEUE
+};
+
+
+enum ConnectionType {
+	RESOURCE,
+	STATE
 };
 
 enum FormulaType {
@@ -133,7 +140,9 @@ enum SimParamType {
 
 enum SimElementsType{
 	CONNECTION,
-	NODE
+	NODE,
+	NODE_TEMPLATE,
+	SIM_TEMPLATE
 };
 
 enum TemplateType{
@@ -196,6 +205,8 @@ struct TemplateInstanciate
 //------------------------------------SIM NODE-----------------------------------
 struct SimulationNode {
 	NodeParams * nodeParams;
+	boolean isTemplate;
+	char* id;
 	NodeType type;
 };
 
@@ -222,6 +233,7 @@ struct SimConnection {
 	NodeReference * from;
 	NodeReference * to;
 	Formula * formula;
+	ConnectionType type;
 };
 
 struct NodeReference {

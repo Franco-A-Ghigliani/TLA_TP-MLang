@@ -46,6 +46,28 @@ Program * ExpressionProgramSemanticAction(CompilerState * compilerState) {
 	return program;
 }
 
+SimElements* nodeTemplateElementsSemanticAction(SimulationNode* node, SimElements* next){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SimElements* simElems = calloc(1, sizeof(SimElements));
+
+	node->isTemplate = true;
+	simElems->node = node;
+	simElems->type = NODE_TEMPLATE;
+	simElems->next = NULL;
+	return simElems;
+}
+
+SimulationNode* nodeSemanticAction(char* id,  NodeParams* params, NodeType type){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SimulationNode* node = calloc(1, sizeof(SimulationNode));
+
+	node->isTemplate = false;
+	node->nodeParams = params;
+	node->type = type;
+	node->id = id;
+	return node;
+}
+
 Factor * IntegerFactorSemanticAction(int value){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Factor * factor = calloc(1, sizeof(Factor));
