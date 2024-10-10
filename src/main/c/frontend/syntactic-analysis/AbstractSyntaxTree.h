@@ -23,6 +23,7 @@ typedef enum SimParamType SimParamType;
 typedef enum NodeParamType NodeParamType;
 typedef enum SimElementsType SimElementsType;
 typedef enum FormulaType FormulaType;
+typedef enum ExpressionType ExpressionType;
 
 typedef struct Vector Vector;
 typedef struct Program Program;
@@ -39,6 +40,8 @@ typedef struct NodeParam NodeParam;
 typedef struct SimulationNode SimulationNode;
 typedef struct NodeReference NodeReference;
 typedef struct Formula Formula;
+typedef struct Expression Expression;
+typedef struct Factor Factor;
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
@@ -72,11 +75,17 @@ enum NodeParamType{
 };
 
 enum FormulaType {
+	PERCENTAGE,
+	GREATER_THAN,
+	LESS_THAN
+};
+
+enum ExpressionType {
 	ADDITION,
 	DIVISION,
 	FACTOR,
 	MULTIPLICATION,
-	SUBTRACTION
+	SUBTRACTION,
 };
 
 enum ActivationMode {
@@ -189,14 +198,28 @@ struct NodeReference {
 };
 
 struct Formula {
-	union {
-		char * id;
-		int value;
-	};
+	Expression * expression;
 	FormulaType type;
-	Formula * next;
 };
 
+struct Expression {
+	union {
+		Factor * factor;
+		struct {
+			Expression * leftExpression;
+			Expression * rightExpression;
+		};
+	}
+	ExpressionType type;
+};
+
+struct Factor {
+	union {
+		int value;
+		char * id;
+	};
+	ValueType type;
+}
 
 //------------------------------------------------SIM PARAMS----------------------------
 struct SimulationParams {
@@ -213,6 +236,7 @@ struct SimulationParam {
 	};
 	SimParamType type;
 };
+
 
 //------------------------------------------VECTOR----------------------------------------
 struct Vector {

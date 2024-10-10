@@ -180,7 +180,7 @@ simWrapper: constant simWrapper														    {}
 	|		%empty																		{}
 	;
 
-constant: 	CONSTANT_KEY ID EQUALS INTEGER												{}
+constant: 	CONSTANT_KEY ID EQUALS expression											{}
 	|		CONSTANT_KEY ID EQUALS STRING												{}
 	;
 
@@ -229,11 +229,11 @@ nodeParam: NODE_LABEL EQUALS STRING														{}
 	| GATE_RANDOM_DISTRIBUTION EQUALS BOOLEAN											{}
 	| NODE_ACTIVATION EQUALS NODE_ACTIVATION_ENUM										{}
 	| NODE_ACTIVATION_MODE EQUALS NODE_ACTIVATION_MODE_ENUM								{}
-	| POOL_INITIAL_RESOURCES EQUALS INTEGER												{}
+	| POOL_INITIAL_RESOURCES EQUALS expression											{}
 	| NODE_RESOURCE_COLOR EQUALS COLOR													{}
 	| POOL_INITIAL_RESOURCES_COLOR EQUALS COLOR											{}
-	| POOL_CAPACITY EQUALS INTEGER														{}
-	| POOL_NUMBER_DISPLAY_THRESHOLD EQUALS INTEGER										{}
+	| POOL_CAPACITY EQUALS expression													{}
+	| POOL_NUMBER_DISPLAY_THRESHOLD EQUALS expression									{}
 	| POOL_DRAIN_ON_OVERFLOW EQUALS BOOLEAN												{}
 	| CONVERTER_MULTICONVERSION EQUALS BOOLEAN											{}
 	| DELAY_QUEUE EQUALS BOOLEAN														{}
@@ -245,17 +245,21 @@ simConnection: nodeReference RESOURCE_CONNECT nodeReference OPEN_BRACKET formula
 	| nodeReference STATE_CONNECT nodeReference OPEN_BRACKET formula CLOSE_BRACKET					{}
 	;
 
-formula: LESS_THAN formula																{}
-	| GREATER_THAN formula																{}
-	| INTEGER formula																	{}
-	| ID formula																		{}
-	| PERCENTAGE formula																{}
-	| SUBSTRACT formula																	{}
-	| ADD formula																		{}
-	| MULTIPLY formula 																	{}
-	| DIVIDE formula																	{}
-	| ID 																				{}
-	| INTEGER																			{}
+formula: LESS_THAN expression																		{}
+	| GREATER_THAN expression																		{}
+	| expression PERCENTAGE 																		{}
+	| expression 																					{}
+	;
+
+expression: expression SUBSTRACT expression															{}
+	| expression ADD expression																		{}
+	| expression MULTIPLY expression 																{}
+	| expression DIVIDE expression																	{}
+	| factor																						{}
+	;
+
+factor: ID																				{}
+	INTEGER																				{}
 	;
 
 nodeReference: ID 																		{} 
