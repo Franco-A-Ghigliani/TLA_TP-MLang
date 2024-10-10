@@ -20,8 +20,10 @@ typedef enum Color Color;
 typedef enum ValueType ValueType;
 typedef enum SimWrapperType SimWrapperType;
 typedef enum SimParamType SimParamType;
+typedef enum NodeType NodeType;
 typedef enum NodeParamType NodeParamType;
 typedef enum SimElementsType SimElementsType;
+typedef enum TemplateType TemplateType;
 typedef enum FormulaType FormulaType;
 typedef enum ExpressionType ExpressionType;
 
@@ -29,6 +31,7 @@ typedef struct Vector Vector;
 typedef struct Program Program;
 typedef struct Simulation Simulation;
 typedef struct SimulationTemplate SimulationTemplate;
+typedef struct TemplateInstanciate TemplateInstanciate;
 typedef struct SimulationParams SimulationParams;
 typedef struct SimulationParam SimulationParam;
 typedef struct SimulationWrapper SimulationWrapper;
@@ -77,7 +80,8 @@ enum NodeParamType{
 enum FormulaType {
 	PERCENTAGE,
 	GREATER_THAN,
-	LESS_THAN
+	LESS_THAN,
+	EXPRESSION
 };
 
 enum ExpressionType {
@@ -86,6 +90,7 @@ enum ExpressionType {
 	FACTOR,
 	MULTIPLICATION,
 	SUBTRACTION,
+	EXPRESSION
 };
 
 enum ActivationMode {
@@ -110,6 +115,16 @@ enum SimWrapperType{
 	SIMULATION_NODE
 };
 
+enum NodeType{
+	SOURCE,
+	POOL,
+	GATE,
+	DELAY,
+	CONVERTER,
+	DRAIN,
+	END_CONDITION
+};
+
 enum SimParamType {
 	NAME,
 	STEPS,
@@ -118,6 +133,11 @@ enum SimParamType {
 
 enum SimElementsType{
 	CONNECTION,
+	NODE
+};
+
+enum TemplateType{
+	SIMULATION,
 	NODE
 };
 
@@ -157,14 +177,26 @@ struct SimElements {
 	union {
 		SimConnection * connection; 
 		SimulationNode * node;
+		TemplateInstanciate * templateInst;
 	};
 	SimElementsType type;
 	SimElements * next;
 };
 
+struct TemplateInstanciate
+{
+	union {
+		NodeParams * nodeParams;
+		SimElements * elements;
+	};
+	TemplateType type;
+};
+
+
 //------------------------------------SIM NODE-----------------------------------
 struct SimulationNode {
 	NodeParams * nodeParams;
+	NodeType type;
 };
 
 struct NodeParams {
@@ -209,7 +241,8 @@ struct Expression {
 			Expression * leftExpression;
 			Expression * rightExpression;
 		};
-	}
+		Expression * expression;
+	};
 	ExpressionType type;
 };
 
@@ -219,7 +252,7 @@ struct Factor {
 		char * id;
 	};
 	ValueType type;
-}
+};
 
 //------------------------------------------------SIM PARAMS----------------------------
 struct SimulationParams {
