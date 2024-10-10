@@ -27,6 +27,7 @@
 	Vector * vector;
 	Simulation * simulation;
 	SimulationWrapper * simWrapper;
+	TemplateInstance * templateInstance;
 	SimulationParams * simParams;
 	SimulationParam * simParam;
 	SimulationName * simName;
@@ -38,6 +39,7 @@
 	SimElements * simElements;
 	SimConnection * simConnection;
 	NodeParams * nodeParams;
+	NodeParam * nodeParam;
 	NodeReference * nodeReference;
 	Formula * formula;
 }
@@ -144,24 +146,29 @@
 /** TODO: Non-terminals. */
 %type <program> program
 %type <simulation> simulation
+%type <simWrapper> simWrapper
 %type <simParams> simParams
 %type <simParam> simParam
 %type <simNode> simNode
 %type <vector> vector
 %type <simTemplate> simTemplate
+%type <templateInstance> templateInstance
 %type <constant> constant
 %type <simElements> simElements
 %type <simConnection> simConnection
 %type <nodeParams> nodeParams
+%type <nodeParam> nodeParam
 %type <nodeReference> nodeReference
 %type <formula> formula
+%type <expression> expression
+%type <factor> factor
 /**
  * Precedence and associativity.
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
  */
-%left ADD SUB
-%left MUL DIV
+%left ADD SUBSTRACT
+%left MULTIPLY DIVIDE
 
 %%
 
@@ -171,78 +178,83 @@
 //----------------------------------------SIM WRAPPER--------------------------------------
 //EVALUAR SI QUIERO EL EMPTY, YA QUE PODRIAN INGRESAR PROGRAMAS VACIOS O SIN SIMULATION PRINCIPAL
 //PERO ASI SE ACEPTA CUALQUIER COMBINACION Y ORDEN
-program:	simWrapper																	{}
+program:	simWrapper[wrap]															{$$ = wrapperProgramSemanticAction(currentCompilerState(), $wrap);}
 	;
 
-simWrapper: constant simWrapper														    {}
-	|		simTemplate simWrapper														{}
-	|		simulation simWrapper														{}
-	|		%empty																		{}
+simWrapper: constant[const] simWrapper[wrap]											{$$ = constantWrapperSemanticAction($const, $wrap);}
+	|		simTemplate[temp] simWrapper[wrap]											{$$ = templateWrapperSemanticAction($temp, $wrap);}
+	|		simulation[sim] 															{$$ = simulationWrapperSemanticAction($sim);}
+	|		%empty																		{$$ = emptyWrapperSemanticAction();}
 	;
 
-constant: 	CONSTANT_KEY ID EQUALS expression											{}
-	|		CONSTANT_KEY ID EQUALS STRING												{}
+
+
+constant: 	CONSTANT_KEY ID[id] EQUALS expression[exp]									{$$ = expressionConstantSemanticAction($id, $exp);}
+	|		CONSTANT_KEY ID[id] EQUALS STRING[str]										{$$ = stringConstantSemanticAction($id, $str);}
 	;
 
-simTemplate: TEMPLATE COLON SIMULATION ID OPEN_PARENTHESIS CLOSE_PARENTHESIS OPEN_BRACKET simElements CLOSE_BRACKET	{}
+simTemplate: TEMPLATE COLON SIMULATION ID[id] OPEN_PARENTHESIS CLOSE_PARENTHESIS OPEN_BRACKET simElements[elems] CLOSE_BRACKET	{$$ = templateSemanticAction($id, $elems);}
 	;
 
-simulation: SIMULATION OPEN_PARENTHESIS simParams CLOSE_PARENTHESIS OPEN_BRACKET simElements CLOSE_BRACKET					{}
+simulation: SIMULATION OPEN_PARENTHESIS simParams[params] CLOSE_PARENTHESIS OPEN_BRACKET simElements[elems] CLOSE_BRACKET		{$$ = simulationSemanticAction($params, $elems);}
 	;
 
-simElements: simNode simElements  														{}
-	| TEMPLATE COLON simNode simElements												{}
-	| simConnection simElements															{}
-	| %empty																			{}
+simElements: simNode[node] simElements[elems]  											{$$ = nodeElementsSemanticAction($node, $elems);}
+	| TEMPLATE COLON simNode[node] simElements[elems]									{$$ = nodeTemplateElementsSemanticAction($node, $elems);}
+	| templateInstance[inst]	simElements[elems]										{$$ = intanciationElementsSemanticAction($inst, $elems);}
+	| simConnection[connection] simElements[elems]										{$$ = connectionElementsSemanticAction($connection, $elems);}
+	| %empty																			{$$ = emptyElementsSemanticAction();}
 	;
+
+templateInstance: NEW ID[id] ID[instanceId] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET			{$$ = nodeInstanciationSemanticAction($id, $instanceId, $params);}
+	| NEW ID[id] ID[instanceId] SEMI_COLON															{$$ = simInstanciationSemanticAction($id, $instanceId);}
 //---------------------------------------------------------------------------------------
 //------------------------------SIM PARAMS-----------------------------------------------
-simParams: simParam COMMA simParam COMMA simParam 										{}
-	|	simParam COMMA simParam 														{}
-	|	simParam 																		{}
-	|	%empty																			{}
+simParams: simParam[param1] COMMA simParam[param2] COMMA simParam[param3] 				{$$ = simParamsSemanticAction($param1, $param2, $param3);}
+	|	simParam[param1] COMMA simParam[param2] 										{$$ = simParamsSemanticAction($param1, $param2, null);}
+	|	simParam[param] 																{$$ = simParamsSemanticAction($param1, null, null);}
+	|	%empty																			{$$ = simParamsSemanticAction(null, null, null);}
 	;
 
-simParam: SIMULATION_NAME EQUALS STRING[name]											{}
-	|	STEPS_TO_SIMULATE EQUALS INTEGER[steps]											{}
-	|	STEP_INTERVAL EQUALS INTEGER[interval]											{}
+simParam: SIMULATION_NAME EQUALS STRING[name]											{$$ = nameSimParamSemanticAction($name);}
+	|	STEPS_TO_SIMULATE EQUALS INTEGER[steps]											{$$ = stepsToSimulateSimParamSemanticAction($steps);}
+	|	STEP_INTERVAL EQUALS INTEGER[interval]											{$$ = stepIntervalSimParamSemanticAction($interval);}
 	;
 
 //----------------------------------------------------------------------------------------
 //-------------------------------------SIM NODE-------------------------------------------
-simNode: NEW ID OPEN_BRACKET nodeParams CLOSE_BRACKET									{}
-	| SOURCE ID OPEN_BRACKET nodeParams CLOSE_BRACKET									{}
-	| GATE ID OPEN_BRACKET nodeParams CLOSE_BRACKET										{}
-	| DRAIN ID OPEN_BRACKET nodeParams CLOSE_BRACKET									{}
-	| POOL ID OPEN_BRACKET nodeParams CLOSE_BRACKET										{}
-	| CONVERTER ID OPEN_BRACKET nodeParams CLOSE_BRACKET								{}
-	| DELAY ID OPEN_BRACKET nodeParams CLOSE_BRACKET									{}
-	| END_CONDITION ID OPEN_BRACKET nodeParams CLOSE_BRACKET							{}
+simNode: SOURCE ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ = nodeSemanticAction($params, SOURCE);}
+	| GATE ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET										{$$ = nodeSemanticAction($params, GATE);}
+	| DRAIN ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET									{$$ = nodeSemanticAction($params, DRAIN);}
+	| POOL ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET										{$$ = nodeSemanticAction($params, POOL);}
+	| CONVERTER ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ = nodeSemanticAction($params, CONVERTER);}
+	| DELAY ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET									{$$ = nodeSemanticAction($params, DELAY);}
+	| END_CONDITION ID OPEN_BRACKET nodeParams[params] CLOSE_BRACKET							{$$ = nodeSemanticAction($params, END_CONDITION);}
 	;
 
-nodeParams: nodeParam 																	{}
-	| nodeParam	SEMI_COLON nodeParams													{}
+nodeParams: nodeParam[param] 																	{$$ = nodeParamsSemanticAction($param, null);}
+	| nodeParam[param]	SEMI_COLON nodeParams[next]												{$$ = nodeParamsSemanticAction($param, $next);}
 	;
 
-nodeParam: NODE_LABEL EQUALS STRING														{}
-	| NODE_POSITION EQUALS vector														{}
-	| GATE_RANDOM_DISTRIBUTION EQUALS BOOLEAN											{}
-	| NODE_ACTIVATION EQUALS NODE_ACTIVATION_ENUM										{}
-	| NODE_ACTIVATION_MODE EQUALS NODE_ACTIVATION_MODE_ENUM								{}
-	| POOL_INITIAL_RESOURCES EQUALS expression											{}
-	| NODE_RESOURCE_COLOR EQUALS COLOR													{}
-	| POOL_INITIAL_RESOURCES_COLOR EQUALS COLOR											{}
-	| POOL_CAPACITY EQUALS expression													{}
-	| POOL_NUMBER_DISPLAY_THRESHOLD EQUALS expression									{}
-	| POOL_DRAIN_ON_OVERFLOW EQUALS BOOLEAN												{}
-	| CONVERTER_MULTICONVERSION EQUALS BOOLEAN											{}
-	| DELAY_QUEUE EQUALS BOOLEAN														{}
+nodeParam: NODE_LABEL EQUALS STRING[val]														{$$ = labelParamSemanticAction($val);}
+	| NODE_POSITION EQUALS vector[val]															{$$ = postionParamSemanticAction($val);}
+	| NODE_ACTIVATION EQUALS NODE_ACTIVATION_ENUM[val]											{$$ = nodeActivationParamSemanticAction($val);}
+	| NODE_ACTIVATION_MODE EQUALS NODE_ACTIVATION_MODE_ENUM[val]								{$$ = activationModeParamSemanticAction($val);}
+	| NODE_RESOURCE_COLOR EQUALS COLOR[val]														{$$ = resourceColorParamSemanticAction($val);}
+	| POOL_INITIAL_RESOURCES EQUALS expression[val]												{$$ = initialResourcesParamSemanticAction($val);}
+	| POOL_INITIAL_RESOURCES_COLOR EQUALS COLOR[val]											{$$ = initialResourcesColorParamSemanticAction($val);}
+	| POOL_CAPACITY EQUALS expression[val]														{$$ = capacityParamSemanticAction($val);}
+	| POOL_NUMBER_DISPLAY_THRESHOLD EQUALS expression[val]										{$$ = numberDisplayThresholdParamSemanticAction($val);}
+	| POOL_DRAIN_ON_OVERFLOW EQUALS BOOLEAN[val]												{$$ = drainOnOverflowParamSemanticAction($val);}
+	| GATE_RANDOM_DISTRIBUTION EQUALS BOOLEAN[val]												{$$ = randomDistParamSemanticAction($val);}
+	| CONVERTER_MULTICONVERSION EQUALS BOOLEAN[val]												{$$ = multiconversionParamSemanticAction($val);}
+	| DELAY_QUEUE EQUALS BOOLEAN[val]															{$$ = queueParamSemanticAction($val);}
 	;
 
 //--------------------------------------------------------------------------------------------
 //---------------------------------------SIM CONNECTION---------------------------------------
-simConnection: nodeReference RESOURCE_CONNECT nodeReference OPEN_BRACKET formula CLOSE_BRACKET		{}
-	| nodeReference STATE_CONNECT nodeReference OPEN_BRACKET formula CLOSE_BRACKET					{}
+simConnection: nodeReference[src] RESOURCE_CONNECT nodeReference[dest] OPEN_BRACKET formula[formula] CLOSE_BRACKET		{}
+	| nodeReference[src] STATE_CONNECT nodeReference[dest] OPEN_BRACKET formula[formula] CLOSE_BRACKET					{}
 	;
 
 formula: LESS_THAN expression																		{}
@@ -255,11 +267,12 @@ expression: expression SUBSTRACT expression															{}
 	| expression ADD expression																		{}
 	| expression MULTIPLY expression 																{}
 	| expression DIVIDE expression																	{}
+	| OPEN_PARENTHESIS expression CLOSE_PARENTHESIS													{}
 	| factor																						{}
 	;
 
 factor: ID																				{}
-	INTEGER																				{}
+	| INTEGER																			{}
 	;
 
 nodeReference: ID 																		{} 
