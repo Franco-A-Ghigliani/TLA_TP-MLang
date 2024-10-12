@@ -27,6 +27,8 @@ typedef enum TemplateType TemplateType;
 typedef enum ConnectionType ConnectionType;
 typedef enum FormulaType FormulaType;
 typedef enum ExpressionType ExpressionType;
+typedef enum FactorType FactorType;
+
 
 typedef struct Vector Vector;
 typedef struct Program Program;
@@ -58,8 +60,8 @@ enum Activation {
 };
 
 enum ValueType {
-	STRING,
-	INTEGER
+	VALUE_STRING,
+	VALUE_EXPRESSION
 };
 
 enum NodeParamType{
@@ -88,7 +90,7 @@ enum FormulaType {
 	PERCENTAGE,
 	GREATER_THAN,
 	LESS_THAN,
-	EXPRESSION
+	FORMULA_EXPRESSION
 };
 
 enum ExpressionType {
@@ -97,7 +99,6 @@ enum ExpressionType {
 	FACTOR,
 	MULTIPLICATION,
 	SUBTRACTION,
-	EXPRESSION
 };
 
 enum ActivationMode {
@@ -119,7 +120,8 @@ enum Color {
 enum SimWrapperType{
 	CONSTANT,
 	SIMULATION_TEMPLATE,
-	SIMULATION_NODE
+	SIMULATION,
+	EMPTY_PROGRAM
 };
 
 enum NodeType{
@@ -142,12 +144,18 @@ enum SimElementsType{
 	CONNECTION,
 	NODE,
 	NODE_TEMPLATE,
-	SIM_TEMPLATE
+	TEMPLATE_INSTANCIATION,
+	EMPTY
 };
 
 enum TemplateType{
-	SIMULATION,
-	NODE
+	SIMULATION_INSTANCE,
+	NODE_INSTANCE
+};
+
+enum FactorType{
+	FACTOR_STRING,
+	INTEGER
 };
 
 //---------------------------------------PROGRAM--------------------------------------
@@ -168,12 +176,14 @@ struct SimulationWrapper {
 struct Constant {
 	union {
 		char * string;
-		int value;
+		Expression * expression;
 	};
+	char * constantName;
 	ValueType type;
 };
 
 struct SimulationTemplate {
+	char * name;
 	SimElements * simElements;
 };
 
@@ -194,11 +204,10 @@ struct SimElements {
 
 struct TemplateInstanciate
 {
-	union {
-		NodeParams * nodeParams;
-		SimElements * elements;
-	};
+	NodeParams * nodeParams;
 	TemplateType type;
+	char * name;
+	char * templateReference;
 };
 
 
@@ -220,7 +229,7 @@ struct NodeParam {
 		Activation activation;
 		ActivationMode activationMode;
 		char * string;
-		int value;
+		Expression * expression;
 		Vector * vector;
 		Color color;
 		boolean boolean;
@@ -263,14 +272,14 @@ struct Factor {
 		int value;
 		char * id;
 	};
-	ValueType type;
+	FactorType type;
 };
 
 //------------------------------------------------SIM PARAMS----------------------------
 struct SimulationParams {
-	SimulationParam* name;
-	SimulationParam* steps;
-	SimulationParam* stepInterval;
+	SimulationParam* param1;
+	SimulationParam* param2;
+	SimulationParam* param3;
 };
 
 //creeria que el simParamType es opcional, ya que el nombre en simParams te lo dice todo

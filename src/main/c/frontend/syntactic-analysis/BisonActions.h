@@ -56,7 +56,7 @@ SimulationNode* nodeSemanticAction(char* id,  NodeParams* params, NodeType type)
 NodeParams* nodeParamsSemanticAction(NodeParam* param, NodeParams* next);
 
 NodeParam* labelParamSemanticAction(char* label);
-NodeParam* postionParamSemanticAction(Vector* vector);
+NodeParam* positionParamSemanticAction(Vector* vector);
 NodeParam* nodeActivationParamSemanticAction(Activation activation);
 NodeParam* activationModeParamSemanticAction(ActivationMode mode);
 NodeParam* resourceColorParamSemanticAction(Color color);
@@ -81,7 +81,7 @@ Expression* factorExpressionSemanticAction(Factor * factor);
 Factor* idFactorSemanticAction(char* id);
 Factor* integerFactorSemanticAction(int val);
 
-NodeReference* nodeReferenceSemanticAction(char* id, char* nodeId);
+NodeReference* nodeReferenceSemanticAction(char* id, NodeReference * next);
 	
 //----------------------------------------------------------------------------------------
 //-------------------------------VECTOR---------------------------------------------------

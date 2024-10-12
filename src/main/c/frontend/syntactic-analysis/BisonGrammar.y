@@ -210,9 +210,10 @@ templateInstance: NEW ID[id] ID[instanceId] OPEN_BRACKET nodeParams[params] CLOS
 	| NEW ID[id] ID[instanceId] SEMI_COLON															{$$ = simInstanciationSemanticAction($id, $instanceId);}
 //---------------------------------------------------------------------------------------
 //------------------------------SIM PARAMS-----------------------------------------------
+
 simParams: simParam[param1] COMMA simParam[param2] COMMA simParam[param3] 				{$$ = simParamsSemanticAction($param1, $param2, $param3);}
 	|	simParam[param1] COMMA simParam[param2] 										{$$ = simParamsSemanticAction($param1, $param2, NULL);}
-	|	simParam[param] 																{$$ = simParamsSemanticAction($param1, NULL, NULL);}
+	|	simParam[param] 																{$$ = simParamsSemanticAction($param, NULL, NULL);}
 	|	%empty																			{$$ = simParamsSemanticAction(NULL, NULL, NULL);}
 	;
 
@@ -237,7 +238,7 @@ nodeParams: nodeParam[param] 																	{$$ = nodeParamsSemanticAction($pa
 	;
 
 nodeParam: NODE_LABEL EQUALS STRING[val]														{$$ = labelParamSemanticAction($val);}
-	| NODE_POSITION EQUALS vector[val]															{$$ = postionParamSemanticAction($val);}
+	| NODE_POSITION EQUALS vector[val]															{$$ = positionParamSemanticAction($val);}
 	| NODE_ACTIVATION EQUALS NODE_ACTIVATION_ENUM[val]											{$$ = nodeActivationParamSemanticAction($val);}
 	| NODE_ACTIVATION_MODE EQUALS NODE_ACTIVATION_MODE_ENUM[val]								{$$ = activationModeParamSemanticAction($val);}
 	| NODE_RESOURCE_COLOR EQUALS COLOR[val]														{$$ = resourceColorParamSemanticAction($val);}
@@ -253,14 +254,14 @@ nodeParam: NODE_LABEL EQUALS STRING[val]														{$$ = labelParamSemanticAc
 
 //--------------------------------------------------------------------------------------------
 //---------------------------------------SIM CONNECTION---------------------------------------
-simConnection: nodeReference[from] RESOURCE_CONNECT nodeReference[to] OPEN_BRACKET formula[formula] CLOSE_BRACKET		{$$ = connectionSemanticAction($from, $to, $formula, RESOURCE);}
-	| nodeReference[from] STATE_CONNECT nodeReference[to] OPEN_BRACKET formula[formula] CLOSE_BRACKET					{$$ = connectionSemanticAction($from, $to, $formula, STATE);}
+simConnection: nodeReference[from] RESOURCE_CONNECT nodeReference[to] OPEN_BRACKET formula[form] CLOSE_BRACKET		{$$ = connectionSemanticAction($from, $to, $form, RESOURCE);}
+	| nodeReference[from] STATE_CONNECT nodeReference[to] OPEN_BRACKET formula[form] CLOSE_BRACKET					{$$ = connectionSemanticAction($from, $to, $form, STATE);}
 	;
 
 formula: LESS_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN);}
 	| GREATER_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, GREATER_THAN);}
 	| expression[exp] PERCENTAGE 																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN);}
-	| expression[exp] 																					{$$ = arithmeticFormulaSemanticAction($exp, EXPRESSION);}
+	| expression[exp] 																					{$$ = arithmeticFormulaSemanticAction($exp, FORMULA_EXPRESSION);}
 	;
 
 expression: expression[left] SUBSTRACT expression[right]														{$$ = arithmeticExpressionSemanticAction($left, $right, SUBTRACTION);}
