@@ -69,7 +69,7 @@ SimulationWrapper* simulationWrapperSemanticAction(Simulation* sim){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	SimulationWrapper * wrapper = calloc(1, sizeof(SimulationWrapper));
 	wrapper->simulation = sim;
-	wrapper->type= SIMULATION;
+	wrapper->type= SIMULATION_TYPE;
 	wrapper->nextSimulationWrapper = NULL;
 	return wrapper;
 }
@@ -201,7 +201,7 @@ SimulationParam* nameSimParamSemanticAction(char* name){
 	SimulationParam* simulationParam = calloc(1, sizeof(SimulationParam));
 
 	simulationParam->string = name;
-	simulationParam->type = NAME; 
+	simulationParam->type = NAME_PARAM; 
 	return simulationParam;	
 }
 
@@ -210,7 +210,7 @@ SimulationParam* stepsToSimulateSimParamSemanticAction(int steps){
 	SimulationParam* simulationParam = calloc(1, sizeof(SimulationParam));
 
 	simulationParam->value = steps;
-	simulationParam->type = STEPS; 
+	simulationParam->type = STEPS_PARAM; 
 	return simulationParam;	
 }
 
@@ -219,7 +219,7 @@ SimulationParam* stepIntervalSimParamSemanticAction(int interval){
 	SimulationParam* simulationParam = calloc(1, sizeof(SimulationParam));
 
 	simulationParam->value = interval;
-	simulationParam->type = STEP_INTERVAL; 
+	simulationParam->type = STEP_INTERVAL_PARAM; 
 	return simulationParam;	
 }
 
@@ -248,7 +248,7 @@ NodeParam* labelParamSemanticAction(char* label){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->string=label;
-	nodeParam->type=NODE_LABEL;
+	nodeParam->type=NODE_LABEL_TYPE;
 	return nodeParam;	
 }
 
@@ -257,7 +257,7 @@ NodeParam* positionParamSemanticAction(Vector* vector){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->vector=vector;
-	nodeParam->type=NODE_POSITION;
+	nodeParam->type=NODE_POSITION_TYPE;
 	return nodeParam;	
 }
 
@@ -266,7 +266,7 @@ NodeParam* nodeActivationParamSemanticAction(Activation activation){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->activation=activation;
-	nodeParam->type=NODE_ACTIVATION;
+	nodeParam->type=NODE_ACTIVATION_TYPE;
 	return nodeParam;
 }
 
@@ -275,7 +275,7 @@ NodeParam* activationModeParamSemanticAction(ActivationMode mode){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->activationMode = mode;
-	nodeParam->type=NODE_ACTIVATION_MODE;
+	nodeParam->type=NODE_ACTIVATION_MODE_TYPE;
 	return nodeParam;	
 }
 
@@ -284,7 +284,7 @@ NodeParam* resourceColorParamSemanticAction(Color color){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->color = color;
-	nodeParam->type=NODE_RESOURCE_COLOR;
+	nodeParam->type=NODE_RESOURCE_COLOR_TYPE;
 	return nodeParam;	
 }
 
@@ -293,7 +293,7 @@ NodeParam* initialResourcesParamSemanticAction(Expression* exp){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->expression = exp;
-	nodeParam->type=POOL_INITIAL_RESOURCES;
+	nodeParam->type=POOL_INITIAL_RESOURCES_TYPE;
 	return nodeParam;	
 }
 
@@ -302,7 +302,7 @@ NodeParam* initialResourcesColorParamSemanticAction(Color color){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->color = color;
-	nodeParam->type = POOL_INITIAL_RESOURCES_COLOR;
+	nodeParam->type = POOL_INITIAL_RESOURCES_COLOR_TYPE;
 	return nodeParam;		
 }
 
@@ -311,7 +311,7 @@ NodeParam* capacityParamSemanticAction(Expression* exp){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->expression = exp;
-	nodeParam->type = POOL_CAPACITY;
+	nodeParam->type = POOL_CAPACITY_TYPE;
 	return nodeParam;
 }
 
@@ -320,7 +320,7 @@ NodeParam* numberDisplayThresholdParamSemanticAction(Expression* exp){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->expression = exp;
-	nodeParam->type = POOL_NUMBER_DISPLAY_THRESHOLD;
+	nodeParam->type = POOL_NUMBER_DISPLAY_THRESHOLD_TYPE;
 	return nodeParam;	
 }
 
@@ -329,7 +329,7 @@ NodeParam* drainOnOverflowParamSemanticAction(boolean val){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->boolean = val;
-	nodeParam->type = POOL_DRAIN_ON_OVERFLOW;
+	nodeParam->type = POOL_DRAIN_ON_OVERFLOW_TYPE;
 	return nodeParam;
 }
 
@@ -338,7 +338,7 @@ NodeParam* randomDistParamSemanticAction(boolean val){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->boolean = val;
-	nodeParam->type = GATE_RANDOM_DISTRIBUTION;
+	nodeParam->type = GATE_RANDOM_DISTRIBUTION_TYPE;
 	return nodeParam;	
 }
 
@@ -347,7 +347,7 @@ NodeParam* multiconversionParamSemanticAction(boolean val){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->boolean = val;
-	nodeParam->type = CONVERTER_MULTICONVERSION;
+	nodeParam->type = CONVERTER_MULTICONVERSION_TYPE;
 	return nodeParam;	
 }
 
@@ -356,7 +356,7 @@ NodeParam* queueParamSemanticAction(boolean val){
 	NodeParam* nodeParam = calloc(1, sizeof(NodeParam));
 
 	nodeParam->boolean = val;
-	nodeParam->type = DELAY_QUEUE;
+	nodeParam->type = DELAY_QUEUE_TYPE;
 	return nodeParam;		
 }
 
@@ -413,7 +413,7 @@ Factor* integerFactorSemanticAction(int val){
 	Factor* factor = calloc(1, sizeof(Factor));
 
 	factor->value=val;
-	factor->type=INTEGER;
+	factor->type=INTEGER_TYPE;
 	return factor;		
 }
 

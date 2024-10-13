@@ -220,13 +220,13 @@ simParam: SIMULATION_NAME EQUALS STRING[name]											{$$ = nameSimParamSemant
 
 //----------------------------------------------------------------------------------------
 //-------------------------------------SIM NODE-------------------------------------------
-simNode: SOURCE ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ = nodeSemanticAction($id, $params, SOURCE);}
-	| GATE ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET										{$$ = nodeSemanticAction($id, $params, GATE);}
-	| DRAIN ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET									{$$ = nodeSemanticAction($id, $params, DRAIN);}
-	| POOL ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET										{$$ = nodeSemanticAction($id, $params, POOL);}
-	| CONVERTER ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ = nodeSemanticAction($id, $params, CONVERTER);}
-	| DELAY ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET									{$$ = nodeSemanticAction($id, $params, DELAY);}
-	| END_CONDITION ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET							{$$ = nodeSemanticAction($id, $params, END_CONDITION);}
+simNode: SOURCE ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ = nodeSemanticAction($id, $params, SOURCE_TYPE);}
+	| GATE ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET										{$$ = nodeSemanticAction($id, $params, GATE_TYPE);}
+	| DRAIN ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET									{$$ = nodeSemanticAction($id, $params, DRAIN_TYPE);}
+	| POOL ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET										{$$ = nodeSemanticAction($id, $params, POOL_TYPE);}
+	| CONVERTER ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ = nodeSemanticAction($id, $params, CONVERTER_TYPE);}
+	| DELAY ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET									{$$ = nodeSemanticAction($id, $params, DELAY_TYPE);}
+	| END_CONDITION ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET							{$$ = nodeSemanticAction($id, $params, END_CONDITION_TYPE);}
 	;
 
 nodeParams: nodeParam[param] 																	{$$ = nodeParamsSemanticAction($param, NULL);}
@@ -254,9 +254,9 @@ simConnection: nodeReference[from] RESOURCE_CONNECT nodeReference[to] OPEN_BRACK
 	| nodeReference[from] STATE_CONNECT nodeReference[to] OPEN_BRACKET formula[form] CLOSE_BRACKET					{$$ = connectionSemanticAction($from, $to, $form, STATE);}
 	;
 
-formula: LESS_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN);}
-	| GREATER_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, GREATER_THAN);}
-	| expression[exp] PERCENTAGE 																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN);}
+formula: LESS_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN_TYPE);}
+	| GREATER_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, GREATER_THAN_TYPE);}
+	| expression[exp] PERCENTAGE 																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN_TYPE);}
 	| expression[exp] 																					{$$ = arithmeticFormulaSemanticAction($exp, FORMULA_EXPRESSION);}
 	;
 

@@ -48,7 +48,7 @@
 <FORMULA>"*"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), MULTIPLY);}
 <FORMULA>"/"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), DIVIDE);}
 
-"Simulation"                                                                        {return SimulationLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM)} 
+"Simulation"                                                                        {return SimulationLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM);} 
 "const"                                                                             {Token token = ConstantLexemeAction(createLexicalAnalyzerContext()); BEGIN(CONST); return token;}
 "Template"                                                                          {return TemplateLexemeAction(createLexicalAnalyzerContext());}
 ":"                                                                                 {return ColonLexemeAction(createLexicalAnalyzerContext());}
