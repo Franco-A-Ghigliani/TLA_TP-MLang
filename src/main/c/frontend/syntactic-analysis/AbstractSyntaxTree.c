@@ -29,15 +29,24 @@ void releaseProgram(Program * program) {
 void releaseSimulationWrapper(SimulationWrapper * wrapper){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (wrapper != NULL) {
-		if(wrapper->constant != NULL){
+		switch (wrapper->type)
+		{
+		case CONSTANT:
 			releaseConstant(wrapper->constant);
-		}
-		if(wrapper->simulationTemplate != NULL){
+			break;
+		
+		case SIMULATION_TEMPLATE:
 			releaseSimulationTemplate(wrapper->simulationTemplate);
-		}
-		if(wrapper->simulation != NULL){
+			break;
+
+		case SIMULATION_TYPE:
 			releaseSimulation(wrapper->simulation);
+			break;
+
+		default:
+			break;
 		}
+		
 		if(wrapper->nextSimulationWrapper != NULL){
 			releaseSimulationWrapper(wrapper->nextSimulationWrapper);
 		}
@@ -90,15 +99,22 @@ void releaseSimulation(Simulation* sim){
 void releaseSimElements(SimElements* elems){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (elems != NULL) {
-		if(elems->connection != NULL){
+		switch (elems->type)
+		{
+		case CONNECTION:
 			releaseSimConnection(elems->connection);
-		}
-	
-		if(elems->node != NULL){
+			break;
+		
+		case NODE:
 			releaseSimulationNode(elems->node);
-		}
-		if(elems->templateInst != NULL){
+			break;
+
+		case TEMPLATE_INSTANCIATION:
 			releaseTemplateInstanciate(elems->templateInst);
+			break;
+
+		default:
+			break;
 		}
 		if(elems->next != NULL){
 			releaseSimElements(elems->next);
@@ -110,8 +126,14 @@ void releaseSimElements(SimElements* elems){
 void releaseTemplateInstanciate(TemplateInstance* instance){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if(instance != NULL){
-		if(instance->nodeParams != NULL){
+		switch (instance->type)
+		{
+		case NODE_INSTANCE:
 			releaseNodeParams(instance->nodeParams);
+			break;
+
+		default:
+			break;
 		}
 		if(instance->name != NULL){
 			free(instance->name);
@@ -218,18 +240,22 @@ void releaseFormula(Formula* formula){
 void releaseExpression(Expression* expression){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if(expression != NULL){
-		if(expression->factor != NULL) {
+		switch (expression->type)
+		{
+		case FACTOR:
 			releaseFactor(expression->factor);
+			break;
+		
+		default:
+			if(expression->leftExpression != NULL){
+				releaseExpression(expression->leftExpression);
+			}
+			if(expression->rightExpression != NULL){
+				releaseExpression(expression->rightExpression);
+			}
+			break;
 		}
-		if(expression->leftExpression != NULL){
-			releaseExpression(expression->leftExpression);
-		}
-		if(expression->rightExpression != NULL){
-			releaseExpression(expression->rightExpression);
-		}
-		if(expression->expression != NULL){
-			releaseExpression(expression->expression);
-		}
+		
 		free(expression);
 	}
 }
