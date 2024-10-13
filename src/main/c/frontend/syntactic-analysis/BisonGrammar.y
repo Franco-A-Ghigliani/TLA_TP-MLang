@@ -185,8 +185,8 @@ simWrapper: constant[const] simWrapper[wrap]											{$$ = constantWrapperSema
 
 
 
-constant: 	CONSTANT_KEY ID[id] EQUALS expression[exp]									{$$ = expressionConstantSemanticAction($id, $exp);}
-	|		CONSTANT_KEY ID[id] EQUALS STRING[str]										{$$ = stringConstantSemanticAction($id, $str);}
+constant: 	CONSTANT_KEY ID[id] EQUALS expression[exp] SEMI_COLON								{$$ = expressionConstantSemanticAction($id, $exp);}
+	|		CONSTANT_KEY ID[id] EQUALS STRING[str] SEMI_COLON						{$$ = stringConstantSemanticAction($id, $str);}
 	;
 
 simTemplate: TEMPLATE COLON SIMULATION ID[id] OPEN_PARENTHESIS CLOSE_PARENTHESIS OPEN_BRACKET simElements[elems] CLOSE_BRACKET	{$$ = templateSemanticAction($id, $elems);}
@@ -203,7 +203,7 @@ simElements: simNode[node] simElements[elems]  											{$$ = nodeElementsSema
 	;
 
 templateInstance: NEW ID[id] ID[instanceId] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET			{$$ = nodeInstanciationSemanticAction($id, $instanceId, $params);}
-	| NEW ID[id] ID[instanceId] SEMI_COLON															{$$ = simInstanciationSemanticAction($id, $instanceId);}
+	| NEW ID[id] ID[instanceId] SEMI_COLON 														{$$ = simInstanciationSemanticAction($id, $instanceId);}
 //---------------------------------------------------------------------------------------
 //------------------------------SIM PARAMS-----------------------------------------------
 
@@ -230,7 +230,7 @@ simNode: SOURCE ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ 
 	;
 
 nodeParams: nodeParam[param] 																	{$$ = nodeParamsSemanticAction($param, NULL);}
-	| nodeParam[param]	SEMI_COLON nodeParams[next]												{$$ = nodeParamsSemanticAction($param, $next);}
+	| nodeParam[param] SEMI_COLON nodeParams[next]												{$$ = nodeParamsSemanticAction($param, $next);}
 	;
 
 nodeParam: NODE_LABEL EQUALS STRING[val]														{$$ = labelParamSemanticAction($val);}
@@ -250,8 +250,8 @@ nodeParam: NODE_LABEL EQUALS STRING[val]														{$$ = labelParamSemanticAc
 
 //--------------------------------------------------------------------------------------------
 //---------------------------------------SIM CONNECTION---------------------------------------
-simConnection: nodeReference[from] RESOURCE_CONNECT nodeReference[to] OPEN_BRACKET formula[form] CLOSE_BRACKET		{$$ = connectionSemanticAction($from, $to, $form, RESOURCE);}
-	| nodeReference[from] STATE_CONNECT nodeReference[to] OPEN_BRACKET formula[form] CLOSE_BRACKET					{$$ = connectionSemanticAction($from, $to, $form, STATE);}
+simConnection: nodeReference[from] RESOURCE_CONNECT nodeReference[to] OPEN_BRACKET formula[form] CLOSE_BRACKET SEMI_COLON		{$$ = connectionSemanticAction($from, $to, $form, RESOURCE);}
+	| nodeReference[from] STATE_CONNECT nodeReference[to] OPEN_BRACKET formula[form] CLOSE_BRACKET SEMI_COLON					{$$ = connectionSemanticAction($from, $to, $form, STATE);}
 	;
 
 formula: LESS_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN_TYPE);}

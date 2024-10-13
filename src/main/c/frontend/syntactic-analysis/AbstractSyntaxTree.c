@@ -237,11 +237,19 @@ void releaseExpression(Expression* expression){
 void releaseFactor(Factor* factor){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if(factor != NULL){
-		if(factor->id != NULL) {
-			free(factor->id);
-		}
-		if(factor->exp != NULL){
-			releaseExpression(factor->exp);
+		switch (factor->type){
+			case FACTOR_STRING:
+				if(factor->id != NULL) {
+					free(factor->id);
+				}
+				break;
+			case EXPRESSION:
+				if(factor->exp != NULL){
+					releaseExpression(factor->exp);
+				}
+				break;
+			default:
+				break;
 		}
 		free(factor);
 	}

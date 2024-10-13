@@ -26,6 +26,7 @@
 %x CONNECTION
 %x FORMULA
 %x VECTOR
+%x CONST_VALUE
 
 /**
  * Reusable patterns.
@@ -43,10 +44,10 @@
 <FORMULA>"<"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), LESS_THAN);}
 <FORMULA>">"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), GREATER_THAN);}
 <FORMULA>"%"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), PERCENTAGE);}
-<FORMULA>"+"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), ADD);}
-<FORMULA>"-"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), SUBSTRACT);}
-<FORMULA>"*"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), MULTIPLY);}
-<FORMULA>"/"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), DIVIDE);}
+<FORMULA,CONST_VALUE>"+"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), ADD);}
+<FORMULA,CONST_VALUE>"-"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), SUBSTRACT);}
+<FORMULA,CONST_VALUE>"*"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), MULTIPLY);}
+<FORMULA,CONST_VALUE>"/"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), DIVIDE);}
 
 "Simulation"                                                                        {return SimulationLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM);} 
 "const"                                                                             {Token token = ConstantLexemeAction(createLexicalAnalyzerContext()); BEGIN(CONST); return token;}
@@ -77,10 +78,10 @@
 <NODE_PARAM_VALUE>";"                                                               {Token token = SemiColonLexemeAction(createLexicalAnalyzerContext()); BEGIN(NODE_PARAMS); return token;}
 <CONNECTION>";"                                                                     {Token token = SemiColonLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM_NODES); return token;}
 <INSTANCIATION>";"                                                                  {Token token = SemiColonLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM_NODES); return token;}
-<CONST>";"                                                                          {Token token = SemiColonLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); return token;}
+<CONST_VALUE>";"                                                                          {Token token = SemiColonLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); return token;}
 
-<NODE_PARAM_VALUE><SIM_PARAM_VALUE>\"[^\n\"]*\"                                     {return StringLexemeAction(createLexicalAnalyzerContext());}
-<NODE_PARAM_VALUE><SIM_PARAM_VALUE><VECTOR><FORMULA><CONST>[[:digit:]]+             {return IntegerLexemeAction(createLexicalAnalyzerContext());}
+<NODE_PARAM_VALUE,SIM_PARAM_VALUE>\"[^\n\"]*\"                                     {return StringLexemeAction(createLexicalAnalyzerContext());}
+<NODE_PARAM_VALUE,SIM_PARAM_VALUE,VECTOR,FORMULA,CONST_VALUE>[[:digit:]]+             {return IntegerLexemeAction(createLexicalAnalyzerContext());}
 
 <NODE_PARAMS>"label"                                                                {return NodeParamLexemeAction(createLexicalAnalyzerContext(), NODE_LABEL);}
 <NODE_PARAMS>"position"                                                             {return NodeParamLexemeAction(createLexicalAnalyzerContext(), NODE_POSITION);}
@@ -96,6 +97,7 @@
 <NODE_PARAMS>"multipleConversion"                                                   {return NodeParamLexemeAction(createLexicalAnalyzerContext(), CONVERTER_MULTICONVERSION);}
 <NODE_PARAMS>"isQueue"                                                              {return NodeParamLexemeAction(createLexicalAnalyzerContext(), DELAY_QUEUE);}
 
+<CONST>"="                                                                          {Token token = EqualsLexemeAction(createLexicalAnalyzerContext()); BEGIN(CONST_VALUE); return token;}
 <NODE_PARAMS>"="                                                                    {Token token = EqualsLexemeAction(createLexicalAnalyzerContext()); BEGIN(NODE_PARAM_VALUE); return token;}
 <SIM_PARAMS>"="                                                                     {Token token = EqualsLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM_PARAM_VALUE); return token;}
 
@@ -118,16 +120,16 @@
 <SIM_PARAMS>"stepInterval"                                                          {return SimParamLexemeAction(createLexicalAnalyzerContext(), STEP_INTERVAL);}
 <SIM_PARAMS>"stepsToSimulate"                                                       {return SimParamLexemeAction(createLexicalAnalyzerContext(), STEPS_TO_SIMULATE);}
 <SIM_PARAMS>")"                                                                     {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION); return token;}
-<FORMULA>")"                                                                        {return CloseParenthesisLexemeAction(createLexicalAnalyzerContext());}
+<FORMULA,CONST_VALUE>")"                                                                        {return CloseParenthesisLexemeAction(createLexicalAnalyzerContext());}
 <VECTOR>")"                                                                         {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(NODE_PARAM_VALUE); return token;}
 
 <SIM>"{"                                                                            {Token token = OpenBracketLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM_NODES); return token;}
 <CONNECTION>"{"                                                                     {Token token = OpenBracketLexemeAction(createLexicalAnalyzerContext()); BEGIN(FORMULA); return token;}
-<INSTANCIATION><NODE>"{"                                                            {Token token = OpenBracketLexemeAction(createLexicalAnalyzerContext()); BEGIN(NODE_PARAMS); return token;}
+<INSTANCIATION,NODE>"{"                                                            {Token token = OpenBracketLexemeAction(createLexicalAnalyzerContext()); BEGIN(NODE_PARAMS); return token;}
 <SIM>"("                                                                            {Token token = OpenParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM_PARAMS); return token;}
 <NODE_PARAM_VALUE>"("                                                               {Token token = OpenParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(VECTOR); return token;}
-<FORMULA>"("                                                                        {return OpenParenthesisLexemeAction(createLexicalAnalyzerContext()); }
-<SIM><NODE><INSTANCIATION><SIM_NODES><CONNECTION><FORMULA>[a-zA-Z_][a-zA-Z_0-9]*    {return IdLexemeAction(createLexicalAnalyzerContext());}
+<FORMULA,CONST_VALUE>"("                                                                        {return OpenParenthesisLexemeAction(createLexicalAnalyzerContext()); }
+<SIM,NODE,INSTANCIATION,CONST,SIM_NODES,CONNECTION,FORMULA>[a-zA-Z_][a-zA-Z_0-9]*    {return IdLexemeAction(createLexicalAnalyzerContext());}
 
 <*>"//"[^\n]*								                                        { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <*>[[:space:]]+						                                                { IgnoredLexemeAction(createLexicalAnalyzerContext()); }

@@ -16,10 +16,10 @@
  */
 const int main(const int count, const char ** arguments) {
 	Logger * logger = createLogger("EntryPoint");
-	// initializeFlexActionsModule();
-	// initializeBisonActionsModule();
-	// initializeSyntacticAnalyzerModule();
-	// initializeAbstractSyntaxTreeModule();
+	initializeFlexActionsModule();
+	initializeBisonActionsModule();
+	initializeSyntacticAnalyzerModule();
+	initializeAbstractSyntaxTreeModule();
 	// initializeCalculatorModule();
 	// initializeGeneratorModule();
 
@@ -39,9 +39,9 @@ const int main(const int count, const char ** arguments) {
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
-		// logDebugging(logger, "Computing expression value...");
-		// Program * program = compilerState.abstractSyntaxtTree;
-		// ComputationResult computationResult = computeExpression(program->expression);
+		logDebugging(logger, "Computing expression value...");
+		Program * program = compilerState.abstractSyntaxtTree;
+		// //ComputationResult computationResult = computeExpression(program->expression);
 		// if (computationResult.succeed) {
 		// 	compilerState.value = computationResult.value;
 		// 	generate(&compilerState);
@@ -52,8 +52,8 @@ const int main(const int count, const char ** arguments) {
 		// }
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
-		// logDebugging(logger, "Releasing AST resources...");
-		// releaseProgram(program);
+		logDebugging(logger, "Releasing AST resources...");
+		releaseProgram(program);
 	}
 	else {
 		logError(logger, "The syntactic-analysis phase rejects the input program.");
@@ -63,10 +63,10 @@ const int main(const int count, const char ** arguments) {
 	logDebugging(logger, "Releasing modules resources...");
 	// shutdownGeneratorModule();
 	// shutdownCalculatorModule();
-	// shutdownAbstractSyntaxTreeModule();
-	// shutdownSyntacticAnalyzerModule();
-	// shutdownBisonActionsModule();
-	// shutdownFlexActionsModule();
+	shutdownAbstractSyntaxTreeModule();
+	shutdownSyntacticAnalyzerModule();
+	shutdownBisonActionsModule();
+	shutdownFlexActionsModule();
 	logDebugging(logger, "Compilation is done.");
 	destroyLogger(logger);
 	return compilationStatus;
