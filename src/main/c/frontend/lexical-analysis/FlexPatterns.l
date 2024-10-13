@@ -119,7 +119,7 @@
 <SIM_PARAMS>"name"                                                                  {return SimParamLexemeAction(createLexicalAnalyzerContext(), SIMULATION_NAME);}
 <SIM_PARAMS>"stepInterval"                                                          {return SimParamLexemeAction(createLexicalAnalyzerContext(), STEP_INTERVAL);}
 <SIM_PARAMS>"stepsToSimulate"                                                       {return SimParamLexemeAction(createLexicalAnalyzerContext(), STEPS_TO_SIMULATE);}
-<SIM_PARAM_VALUE>")"                                                                     {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION); return token;}
+<SIM_PARAM_VALUE,SIM_PARAMS>")"                                                                     {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION); return token;}
 <FORMULA,CONST_VALUE>")"                                                                        {return CloseParenthesisLexemeAction(createLexicalAnalyzerContext());}
 <VECTOR>")"                                                                         {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(NODE_PARAM_VALUE); return token;}
 
