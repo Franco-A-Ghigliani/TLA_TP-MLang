@@ -30,12 +30,8 @@
 	TemplateInstance * templateInstance;
 	SimulationParams * simParams;
 	SimulationParam * simParam;
-	SimulationName * simName;
-	SimulationStepsToSimulate * simStepsToSimulate;
-	SimulationStepInterval * simStepInterval;
 	SimulationNode * simNode;
 	SimulationTemplate * simTemplate;
-	GenericValue * genericValue;
 	SimElements * simElements;
 	SimConnection * simConnection;
 	NodeParams * nodeParams;

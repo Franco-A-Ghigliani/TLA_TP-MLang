@@ -34,12 +34,12 @@ Simulation* simulationSemanticAction(SimulationParams* params, SimElements* elem
 
 SimElements* nodeElementsSemanticAction(SimulationNode* node, SimElements* next);
 SimElements* nodeTemplateElementsSemanticAction(SimulationNode* node, SimElements* next);
-SimElements* intanciationElementsSemanticAction(TemplateInstanciate* inst, SimElements* next);
+SimElements* intanciationElementsSemanticAction(TemplateInstance* inst, SimElements* next);
 SimElements* connectionElementsSemanticAction(SimConnection* connection, SimElements* next);
 SimElements* emptyElementsSemanticAction();
 
-TemplateInstanciate* nodeInstanciationSemanticAction(char* templateId, char* instanceId, NodeParams* params);
-TemplateInstanciate* simInstanciationSemanticAction(char* templateId, char* instanceId);
+TemplateInstance* nodeInstanciationSemanticAction(char* templateId, char* instanceId, NodeParams* params);
+TemplateInstance* simInstanciationSemanticAction(char* templateId, char* instanceId);
 
 //---------------------------------------------------------------------------------------
 //------------------------------SIM PARAMS-----------------------------------------------

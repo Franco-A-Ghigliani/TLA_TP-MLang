@@ -34,7 +34,7 @@ typedef struct Vector Vector;
 typedef struct Program Program;
 typedef struct Simulation Simulation;
 typedef struct SimulationTemplate SimulationTemplate;
-typedef struct TemplateInstanciate TemplateInstanciate;
+typedef struct TemplateInstance TemplateInstance;
 typedef struct SimulationParams SimulationParams;
 typedef struct SimulationParam SimulationParam;
 typedef struct SimulationWrapper SimulationWrapper;
@@ -197,13 +197,13 @@ struct SimElements {
 	union {
 		SimConnection * connection; 
 		SimulationNode * node;
-		TemplateInstanciate * templateInst;
+		TemplateInstance * templateInst;
 	};
 	SimElementsType type;
 	SimElements * next;
 };
 
-struct TemplateInstanciate
+struct TemplateInstance
 {
 	NodeParams * nodeParams;
 	TemplateType type;
@@ -306,7 +306,7 @@ void releaseConstant(Constant* constant);
 void releaseSimulationTemplate(SimulationTemplate* template);
 void releaseSimulation(Simulation* sim);
 void releaseSimElements(SimElements* elems);
-void releaseTemplateInstanciate(TemplateInstanciate* instance);
+void releaseTemplateInstanciate(TemplateInstance* instance);
 void releaseSimulationParams(SimulationParams* params);
 void releaseSimulationParam(SimulationParam* param);
 void releaseSimulationNode(SimulationNode* node);

@@ -136,7 +136,7 @@ SimElements* nodeTemplateElementsSemanticAction(SimulationNode* node, SimElement
 	return simElems;
 }
 
-SimElements* intanciationElementsSemanticAction(TemplateInstanciate* inst, SimElements* next){
+SimElements* intanciationElementsSemanticAction(TemplateInstance* inst, SimElements* next){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	SimElements* simElems = calloc(1, sizeof(SimElements));
 
@@ -164,9 +164,9 @@ SimElements* emptyElementsSemanticAction(){
 	return simElems;
 }
 
-TemplateInstanciate* nodeInstanciationSemanticAction(char* templateId, char* instanceId, NodeParams* params){
+TemplateInstance* nodeInstanciationSemanticAction(char* templateId, char* instanceId, NodeParams* params){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	TemplateInstanciate* templateInstanciate = calloc(1, sizeof(TemplateInstanciate));
+	TemplateInstance* templateInstanciate = calloc(1, sizeof(TemplateInstance));
 
 	templateInstanciate->templateReference = templateId;
 	templateInstanciate->name = instanceId;
@@ -175,9 +175,9 @@ TemplateInstanciate* nodeInstanciationSemanticAction(char* templateId, char* ins
 	return templateInstanciate;
 }
 
-TemplateInstanciate* simInstanciationSemanticAction(char* templateId, char* instanceId){
+TemplateInstance* simInstanciationSemanticAction(char* templateId, char* instanceId){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	TemplateInstanciate* templateInstanciate = calloc(1, sizeof(TemplateInstanciate));
+	TemplateInstance* templateInstanciate = calloc(1, sizeof(TemplateInstance));
 
 	templateInstanciate->templateReference = templateId;
 	templateInstanciate->name = instanceId;

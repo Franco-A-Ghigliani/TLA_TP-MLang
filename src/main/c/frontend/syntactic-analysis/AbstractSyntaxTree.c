@@ -107,7 +107,7 @@ void releaseSimElements(SimElements* elems){
 	}
 }
 
-void releaseTemplateInstanciate(TemplateInstanciate* instance){
+void releaseTemplateInstanciate(TemplateInstance* instance){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if(instance != NULL){
 		if(instance->nodeParams != NULL){

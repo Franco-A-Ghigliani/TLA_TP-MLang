@@ -16,12 +16,12 @@
  */
 const int main(const int count, const char ** arguments) {
 	Logger * logger = createLogger("EntryPoint");
-	initializeFlexActionsModule();
-	initializeBisonActionsModule();
-	initializeSyntacticAnalyzerModule();
-	initializeAbstractSyntaxTreeModule();
-	initializeCalculatorModule();
-	initializeGeneratorModule();
+	// initializeFlexActionsModule();
+	// initializeBisonActionsModule();
+	// initializeSyntacticAnalyzerModule();
+	// initializeAbstractSyntaxTreeModule();
+	// initializeCalculatorModule();
+	// initializeGeneratorModule();
 
 	// Logs the arguments of the application.
 	for (int k = 0; k < count; ++k) {
@@ -39,21 +39,21 @@ const int main(const int count, const char ** arguments) {
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
-		logDebugging(logger, "Computing expression value...");
-		Program * program = compilerState.abstractSyntaxtTree;
-		ComputationResult computationResult = computeExpression(program->expression);
-		if (computationResult.succeed) {
-			compilerState.value = computationResult.value;
-			generate(&compilerState);
-		}
-		else {
-			logError(logger, "The computation phase rejects the input program.");
-			compilationStatus = FAILED;
-		}
+		// logDebugging(logger, "Computing expression value...");
+		// Program * program = compilerState.abstractSyntaxtTree;
+		// ComputationResult computationResult = computeExpression(program->expression);
+		// if (computationResult.succeed) {
+		// 	compilerState.value = computationResult.value;
+		// 	generate(&compilerState);
+		// }
+		// else {
+		// 	logError(logger, "The computation phase rejects the input program.");
+		// 	compilationStatus = FAILED;
+		// }
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
-		logDebugging(logger, "Releasing AST resources...");
-		releaseProgram(program);
+		// logDebugging(logger, "Releasing AST resources...");
+		// releaseProgram(program);
 	}
 	else {
 		logError(logger, "The syntactic-analysis phase rejects the input program.");
@@ -61,12 +61,12 @@ const int main(const int count, const char ** arguments) {
 	}
 
 	logDebugging(logger, "Releasing modules resources...");
-	shutdownGeneratorModule();
-	shutdownCalculatorModule();
-	shutdownAbstractSyntaxTreeModule();
-	shutdownSyntacticAnalyzerModule();
-	shutdownBisonActionsModule();
-	shutdownFlexActionsModule();
+	// shutdownGeneratorModule();
+	// shutdownCalculatorModule();
+	// shutdownAbstractSyntaxTreeModule();
+	// shutdownSyntacticAnalyzerModule();
+	// shutdownBisonActionsModule();
+	// shutdownFlexActionsModule();
 	logDebugging(logger, "Compilation is done.");
 	destroyLogger(logger);
 	return compilationStatus;
