@@ -48,11 +48,19 @@ void releaseSimulationWrapper(SimulationWrapper * wrapper){
 void releaseConstant(Constant* constant){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (constant != NULL) {
-		if(constant->string != NULL){
-			free(constant->string);
-		}
-		if(constant->expression != NULL){
-			releaseExpression(constant->expression);
+		switch (constant->type) {
+			case VALUE_STRING:
+				if(constant->string != NULL){
+					free(constant->string);
+				}
+				break;
+			case VALUE_EXPRESSION:
+				if(constant->expression != NULL){
+					releaseExpression(constant->expression);
+				}
+				break;
+			default:
+				break;
 		}
 		if(constant->constantName != NULL){
 			free(constant->constantName);
@@ -176,14 +184,25 @@ void releaseNodeParams(NodeParams* params){
 void releaseNodeParam(NodeParam* param){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if(param != NULL){
-		if(param->string != NULL) {
-			free(param->string);
-		}
-		if(param->expression != NULL){
-			releaseExpression(param->expression);
-		}
-		if(param->vector != NULL){
-			releaseVector(param->vector);
+		switch (param->type)
+		{
+			case NODE_LABEL_TYPE:
+				if(param->string != NULL) {
+					free(param->string);
+				}
+				break;
+			case NODE_POSITION_TYPE:
+				if(param->vector != NULL){
+					releaseVector(param->vector);
+				}
+				break;
+			case POOL_INITIAL_RESOURCES_TYPE | POOL_CAPACITY_TYPE | POOL_NUMBER_DISPLAY_THRESHOLD_TYPE:
+				if(param->expression != NULL){
+					releaseExpression(param->expression);
+				}
+				break;
+			default:
+				break;
 		}
 		free(param);
 	}
