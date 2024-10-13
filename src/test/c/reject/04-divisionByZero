@@ -1,0 +1,22 @@
+Simulation healthRegenSim (name="Health Regeneration", stepInterval=1, stepsToSimulate=100){
+    Source regen {
+        label = "Regeneration";
+        position = (-690, 205);
+        activation = automatic;
+        resourceColor=Red;
+    }
+
+    Pool hp {
+        label = "HP";
+        position = (-470, 205);
+        activation = passive;
+        activationMode = pushAny;
+        initialResources = 10;
+        initialResourcesColor = Red;
+        capacity = 20;
+        numberDisplayThreshold = -1;
+        drainOnOverflow = false;
+    }
+
+    regen => hp {1/(3-3)};
+}
