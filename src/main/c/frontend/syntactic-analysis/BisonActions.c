@@ -417,6 +417,16 @@ Factor* integerFactorSemanticAction(int val){
 	return factor;		
 }
 
+Factor* expressionFactorSemanticAction(Expression* exp){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Factor* factor = calloc(1, sizeof(Factor));
+
+	factor->exp=exp;
+	factor->type=EXPRESSION;
+	return factor;		
+}
+
+
 NodeReference * nodeReferenceSemanticAction(char * id, NodeReference * next){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	NodeReference * nodeReference = calloc(1, sizeof(NodeReference));

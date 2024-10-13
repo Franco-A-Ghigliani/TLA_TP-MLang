@@ -80,6 +80,7 @@ Expression* factorExpressionSemanticAction(Factor * factor);
 
 Factor* idFactorSemanticAction(char* id);
 Factor* integerFactorSemanticAction(int val);
+Factor* expressionFactorSemanticAction(Expression* exp);
 
 NodeReference* nodeReferenceSemanticAction(char* id, NodeReference * next);
 	

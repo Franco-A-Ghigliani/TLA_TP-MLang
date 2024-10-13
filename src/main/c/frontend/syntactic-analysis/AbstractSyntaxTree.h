@@ -155,7 +155,8 @@ enum TemplateType{
 
 enum FactorType{
 	FACTOR_STRING,
-	INTEGER
+	INTEGER,
+	EXPRESSION
 };
 
 //---------------------------------------PROGRAM--------------------------------------
@@ -271,6 +272,7 @@ struct Factor {
 	union {
 		int value;
 		char * id;
+		Expression* exp;
 	};
 	FactorType type;
 };

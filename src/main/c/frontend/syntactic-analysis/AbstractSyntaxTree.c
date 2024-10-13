@@ -240,6 +240,9 @@ void releaseFactor(Factor* factor){
 		if(factor->id != NULL) {
 			free(factor->id);
 		}
+		if(factor->exp != NULL){
+			releaseExpression(factor->exp);
+		}
 		free(factor);
 	}
 }
