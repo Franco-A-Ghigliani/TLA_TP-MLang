@@ -1,0 +1,26 @@
+Template:Simulation sim_template () { 
+    Source src {
+        label="SOURCE FROM TEMPLATE";
+        position=(-700, 205);
+        activation = automatic;
+        resourceColor = Red;
+    }
+}
+
+Simulation here_we_instanciate_the_template () {
+    Pool storage {
+        label="POOL FROM MAIN SIMULATION";
+        position=(-700, 300);
+        activation = passive;
+        activationMode = pull-any;
+        initialResources = 0;
+        initialResourcesColor = Red;
+        capacity = -1;
+        numberDisplayThreshold = 0;
+        drainOnOverflow = false;
+    }
+
+    new sim_template templateInstance;
+
+    templateInstance.src => storage {1};
+}

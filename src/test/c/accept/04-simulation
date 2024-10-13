@@ -1,0 +1,3 @@
+Simulation sim (name="this is a simulation", stepInterval=1, stepsToSimulate=100) {
+
+}

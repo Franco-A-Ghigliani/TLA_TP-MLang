@@ -1,0 +1,43 @@
+const eight = 8;
+Simulation sim (name="Mining and Crafting", stepInterval=1, stepsToSimulate=100){
+
+	Template:Pool Almacenamiento {
+		activation=passive;
+		activationMode=pull-any;
+		initialResources=0;
+		initialResourcesColor=Black;
+		capacity=-1;
+		numberDisplayThreshold=0;
+		drainOnOverflow = false;
+	}
+
+	Source mine {
+		label="Mina de recursos";
+		activation=automatic;
+		resourceColor=Black;
+		position=(0, 0);
+	}
+
+	Gate type{
+		label="Tipo de recurso";
+		activation=passive;
+		activationMode=pull-any;
+		randomDistribution=false;
+		position=(50, 0);
+	}
+
+
+	new Almacenamiento coal {
+		label="Carbón almacenado";
+		position=(100, 50);
+	}
+
+	new Almacenamiento iron {
+		label="Hierro almacenado";
+		position=(100, -50);
+	}
+
+	mine => type {1};
+	type => coal {60%};
+	type => iron {20%};
+}

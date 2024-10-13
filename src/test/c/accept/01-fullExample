@@ -1,0 +1,50 @@
+Simulation healthRegenSim (name="Health Regeneration", stepInterval=1, stepsToSimulate=100){
+    Source regen {
+        label = "Regeneration";
+        position = (-690, 205);
+        activation = automatic;
+        resourceColor=Red;
+    }
+
+    Source hp_potion {
+        label = "HP Potion";
+        position = (-287, 207);
+        activation = interactive;
+        resourceColor = Black;
+    }
+
+    Drain dmg {
+        label = "Damage";
+        position = (-470, 365);
+        activation = passive;
+        activationMode = pullAny;
+    }
+
+    Pool hp {
+        label = "HP";
+        position = (-470, 205);
+        activation = passive;
+        activationMode = pushAny;
+        initialResources = 10;
+        initialResourcesColor = Red;
+        capacity = 20;
+        numberDisplayThreshold = -1;
+        drainOnOverflow = false;
+    }
+
+    Gate dmg_trigger {
+        label = "";
+        position = (-621, 368);
+        activation = automatic;
+        activationMode = pullAny;
+        randomDistribution = true;
+    }
+
+    regen => hp {1};
+    hp => dmg {3};
+    hp_potion => hp {5};
+
+    hp =# regen {<5};
+    dmg_trigger =# dmg {35%};
+}
+
