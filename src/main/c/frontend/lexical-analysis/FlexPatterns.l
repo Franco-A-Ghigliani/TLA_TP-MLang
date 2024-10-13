@@ -49,7 +49,7 @@
 <FORMULA,CONST_VALUE>"*"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), MULTIPLY);}
 <FORMULA,CONST_VALUE>"/"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), DIVIDE);}
 
-"Simulation"                                                                        {return SimulationLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM);} 
+"Simulation"                                                                        {Token token = SimulationLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM); return token;} 
 "const"                                                                             {Token token = ConstantLexemeAction(createLexicalAnalyzerContext()); BEGIN(CONST); return token;}
 "Template"                                                                          {return TemplateLexemeAction(createLexicalAnalyzerContext());}
 ":"                                                                                 {return ColonLexemeAction(createLexicalAnalyzerContext());}
@@ -119,7 +119,7 @@
 <SIM_PARAMS>"name"                                                                  {return SimParamLexemeAction(createLexicalAnalyzerContext(), SIMULATION_NAME);}
 <SIM_PARAMS>"stepInterval"                                                          {return SimParamLexemeAction(createLexicalAnalyzerContext(), STEP_INTERVAL);}
 <SIM_PARAMS>"stepsToSimulate"                                                       {return SimParamLexemeAction(createLexicalAnalyzerContext(), STEPS_TO_SIMULATE);}
-<SIM_PARAMS>")"                                                                     {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION); return token;}
+<SIM_PARAM_VALUE>")"                                                                     {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION); return token;}
 <FORMULA,CONST_VALUE>")"                                                                        {return CloseParenthesisLexemeAction(createLexicalAnalyzerContext());}
 <VECTOR>")"                                                                         {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(NODE_PARAM_VALUE); return token;}
 

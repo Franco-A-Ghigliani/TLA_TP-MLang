@@ -1,5 +1,5 @@
 const eight = 8;
-Simulation sim (name="Mining and Crafting", stepInterval=1, stepsToSimulate=100){
+Simulation (name="Mining and Crafting", stepInterval=1, stepsToSimulate=100){
 
 	Template:Pool Almacenamiento {
 		activation=passive;
