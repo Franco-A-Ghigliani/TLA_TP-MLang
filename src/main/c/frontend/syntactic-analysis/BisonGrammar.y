@@ -229,7 +229,7 @@ simNode: SOURCE ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET								{$$ 
 	| END_CONDITION ID[id] OPEN_BRACKET nodeParams[params] CLOSE_BRACKET							{$$ = nodeSemanticAction($id, $params, END_CONDITION_TYPE);}
 	;
 
-nodeParams: nodeParam[param] 																	{$$ = nodeParamsSemanticAction($param, NULL);}
+nodeParams: nodeParam[param] SEMI_COLON																{$$ = nodeParamsSemanticAction($param, NULL);}
 	| nodeParam[param] SEMI_COLON nodeParams[next]												{$$ = nodeParamsSemanticAction($param, $next);}
 	;
 

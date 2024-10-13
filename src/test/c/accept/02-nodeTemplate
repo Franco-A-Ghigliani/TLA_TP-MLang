@@ -3,7 +3,7 @@ Simulation (name="Mining and Crafting", stepInterval=1, stepsToSimulate=100){
 
 	Template:Pool Almacenamiento {
 		activation=passive;
-		activationMode=pull-any;
+		activationMode=pullAny;
 		initialResources=0;
 		initialResourcesColor=Black;
 		capacity=-1;
@@ -21,7 +21,7 @@ Simulation (name="Mining and Crafting", stepInterval=1, stepsToSimulate=100){
 	Gate type{
 		label="Tipo de recurso";
 		activation=passive;
-		activationMode=pull-any;
+		activationMode=pullAny;
 		randomDistribution=false;
 		position=(50, 0);
 	}

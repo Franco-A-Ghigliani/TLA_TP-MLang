@@ -37,9 +37,9 @@
 
 %%
 
-<CONNECTION>"=>"                                                                    {return ResourceConnectionLexemeAction(createLexicalAnalyzerContext());}
-<CONNECTION>"=#"                                                                    {return StateConnectionLexemeAction(createLexicalAnalyzerContext());}
-<CONNECTION>"."                                                                     {return PeriodLexemeAction(createLexicalAnalyzerContext());}
+<SIM_NODES>"=>"                                                                    {Token token = ResourceConnectionLexemeAction(createLexicalAnalyzerContext()); BEGIN(CONNECTION); return token;}
+<SIM_NODES>"=#"                                                                    {Token token = StateConnectionLexemeAction(createLexicalAnalyzerContext()); BEGIN(CONNECTION); return token;}
+<SIM_NODES>"."                                                                     {return PeriodLexemeAction(createLexicalAnalyzerContext());}
 
 <FORMULA>"<"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), LESS_THAN);}
 <FORMULA>">"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), GREATER_THAN);}
@@ -67,10 +67,10 @@
 <NODE_PARAM_VALUE>"Blue"                                                            {return ColorLexemeAction(createLexicalAnalyzerContext(), BLUE);}
 <NODE_PARAM_VALUE>"Orange"                                                          {return ColorLexemeAction(createLexicalAnalyzerContext(), ORANGE);}
 
-<NODE_PARAM_VALUE>"pull-any"                                                        {return ActivationModeEnumLexemeAction(createLexicalAnalyzerContext(), PULL_ANY);}
-<NODE_PARAM_VALUE>"pull-all"                                                        {return ActivationModeEnumLexemeAction(createLexicalAnalyzerContext(), PULL_ALL);}
-<NODE_PARAM_VALUE>"push-any"                                                        {return ActivationModeEnumLexemeAction(createLexicalAnalyzerContext(), PUSH_ANY);}
-<NODE_PARAM_VALUE>"push-all"                                                        {return ActivationModeEnumLexemeAction(createLexicalAnalyzerContext(), PUSH_ALL);}
+<NODE_PARAM_VALUE>"pullAny"                                                        {return ActivationModeEnumLexemeAction(createLexicalAnalyzerContext(), PULL_ANY);}
+<NODE_PARAM_VALUE>"pullAll"                                                        {return ActivationModeEnumLexemeAction(createLexicalAnalyzerContext(), PULL_ALL);}
+<NODE_PARAM_VALUE>"pushAny"                                                        {return ActivationModeEnumLexemeAction(createLexicalAnalyzerContext(), PUSH_ANY);}
+<NODE_PARAM_VALUE>"pushAll"                                                        {return ActivationModeEnumLexemeAction(createLexicalAnalyzerContext(), PUSH_ALL);}
 
 <NODE_PARAM_VALUE>"true"                                                            {return BooleanLexemeAction(createLexicalAnalyzerContext(), true);}
 <NODE_PARAM_VALUE>"false"                                                           {return BooleanLexemeAction(createLexicalAnalyzerContext(), false);}
@@ -81,7 +81,7 @@
 <CONST_VALUE>";"                                                                          {Token token = SemiColonLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); return token;}
 
 <NODE_PARAM_VALUE,SIM_PARAM_VALUE>\"[^\n\"]*\"                                     {return StringLexemeAction(createLexicalAnalyzerContext());}
-<NODE_PARAM_VALUE,SIM_PARAM_VALUE,VECTOR,FORMULA,CONST_VALUE>[[:digit:]]+             {return IntegerLexemeAction(createLexicalAnalyzerContext());}
+<NODE_PARAM_VALUE,SIM_PARAM_VALUE,VECTOR,FORMULA,CONST_VALUE>"-"?[[:digit:]]+             {return IntegerLexemeAction(createLexicalAnalyzerContext());}
 
 <NODE_PARAMS>"label"                                                                {return NodeParamLexemeAction(createLexicalAnalyzerContext(), NODE_LABEL);}
 <NODE_PARAMS>"position"                                                             {return NodeParamLexemeAction(createLexicalAnalyzerContext(), NODE_POSITION);}
@@ -119,7 +119,7 @@
 <SIM_PARAMS>"name"                                                                  {return SimParamLexemeAction(createLexicalAnalyzerContext(), SIMULATION_NAME);}
 <SIM_PARAMS>"stepInterval"                                                          {return SimParamLexemeAction(createLexicalAnalyzerContext(), STEP_INTERVAL);}
 <SIM_PARAMS>"stepsToSimulate"                                                       {return SimParamLexemeAction(createLexicalAnalyzerContext(), STEPS_TO_SIMULATE);}
-<SIM_PARAM_VALUE,SIM_PARAMS>")"                                                                     {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIMULATION); return token;}
+<SIM_PARAM_VALUE,SIM_PARAMS>")"                                                                     {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(SIM); return token;}
 <FORMULA,CONST_VALUE>")"                                                                        {return CloseParenthesisLexemeAction(createLexicalAnalyzerContext());}
 <VECTOR>")"                                                                         {Token token = CloseParenthesisLexemeAction(createLexicalAnalyzerContext()); BEGIN(NODE_PARAM_VALUE); return token;}
 

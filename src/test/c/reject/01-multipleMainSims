@@ -12,7 +12,7 @@ Simulation () {
         label="POOL FROM MAIN SIMULATION";
         position=(-700, 300);
         activation = passive;
-        activationMode = pull-any;
+        activationMode = pullAny;
         initialResources = 0;
         initialResourcesColor = Red;
         capacity = -1;
@@ -30,7 +30,7 @@ Simulation () {
         label="POOL FROM MAIN SIMULATION";
         position=(-700, 300);
         activation = passive;
-        activationMode = pull-any;
+        activationMode = pullAny;
         initialResources = 0;
         initialResourcesColor = Red;
         capacity = -1;
