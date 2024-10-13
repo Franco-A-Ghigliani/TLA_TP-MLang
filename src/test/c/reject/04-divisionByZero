@@ -1,4 +1,4 @@
-Simulation healthRegenSim (name="Health Regeneration", stepInterval=1, stepsToSimulate=100){
+Simulation (name="Health Regeneration", stepInterval=1, stepsToSimulate=100){
     Source regen {
         label = "Regeneration";
         position = (-690, 205);

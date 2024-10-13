@@ -7,7 +7,7 @@ Template:Simulation sim_template () {
     }
 }
 
-Simulation here_we_instanciate_the_template () {
+Simulation () {
     Pool storage {
         label="POOL FROM MAIN SIMULATION";
         position=(-700, 300);
@@ -25,7 +25,7 @@ Simulation here_we_instanciate_the_template () {
     templateInstance.src => storage {1};
 }
 
-Simulation here_we_instanciate_the_template () {
+Simulation () {
     Pool storage {
         label="POOL FROM MAIN SIMULATION";
         position=(-700, 300);
