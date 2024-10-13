@@ -50,7 +50,7 @@ Program * wrapperProgramSemanticAction(CompilerState * compilerState, Simulation
 SimulationWrapper* constantWrapperSemanticAction(Constant* constant, SimulationWrapper* next){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	SimulationWrapper * wrapper = calloc(1, sizeof(SimulationWrapper));
-	wrapper->name = constant;
+	wrapper->constant = constant;
 	wrapper->type= CONSTANT;
 	wrapper->nextSimulationWrapper=next;
 	return wrapper;
@@ -182,6 +182,7 @@ TemplateInstanciate* simInstanciationSemanticAction(char* templateId, char* inst
 	templateInstanciate->templateReference = templateId;
 	templateInstanciate->name = instanceId;
 	templateInstanciate->type=SIMULATION_INSTANCE;
+	templateInstanciate->nodeParams = NULL;
 	return templateInstanciate;
 }
 
@@ -189,9 +190,9 @@ SimulationParams* simParamsSemanticAction(SimulationParam* param1, SimulationPar
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	SimulationParams* simulationParams = calloc(1, sizeof(SimulationParams));
 
-	simulationParams->param1=param1;
-	simulationParams->param2=param2;
-	simulationParams->param3=param3;
+	simulationParams->params[0]=param1;
+	simulationParams->params[1]=param2;
+	simulationParams->params[2]=param3;
 	return simulationParams;
 }
 

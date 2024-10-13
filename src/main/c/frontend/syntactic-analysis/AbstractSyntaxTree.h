@@ -165,7 +165,7 @@ struct Program {
 
 struct SimulationWrapper {
 	union {
-		Constant * name;
+		Constant * constant;
 		SimulationTemplate * simulationTemplate;
 		Simulation * simulation;
 	};
@@ -277,12 +277,9 @@ struct Factor {
 
 //------------------------------------------------SIM PARAMS----------------------------
 struct SimulationParams {
-	SimulationParam* param1;
-	SimulationParam* param2;
-	SimulationParam* param3;
+	SimulationParam* params[3];
 };
 
-//creeria que el simParamType es opcional, ya que el nombre en simParams te lo dice todo
 struct SimulationParam {
 	union {
 		char * string;
@@ -302,5 +299,22 @@ struct Vector {
  * Node recursive destructors.
  */
 void releaseProgram(Program * program);
+void releaseSimulationWrapper(SimulationWrapper * wrapper);
+void releaseConstant(Constant* constant);
+void releaseSimulationTemplate(SimulationTemplate* template);
+void releaseSimulation(Simulation* sim);
+void releaseSimElements(SimElements* elems);
+void releaseTemplateInstanciate(TemplateInstanciate* instance);
+void releaseSimulationParams(SimulationParams* params);
+void releaseSimulationParam(SimulationParam* param);
+void releaseSimulationNode(SimulationNode* node);
+void releaseNodeParams(NodeParams* params);
+void releaseNodeParam(NodeParam* param);
+void releaseSimConnection(SimConnection* connection);
+void releaseFormula(Formula* formula);
+void releaseExpression(Expression* expression);
+void releaseFactor(Factor* factor);
+void releaseNodeReference(NodeReference* ref);
+void releaseVector(Vector* vec);
 
 #endif
