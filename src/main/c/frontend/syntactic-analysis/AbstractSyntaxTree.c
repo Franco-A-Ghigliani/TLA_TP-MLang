@@ -170,8 +170,14 @@ void releaseSimulationParams(SimulationParams* params){
 void releaseSimulationParam(SimulationParam* param){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if(param != NULL){
-		if(param->string != NULL) {
+		switch (param->type)
+		{
+		case NAME_PARAM:
 			free(param->string);
+			break;
+		
+		default:
+			break;
 		}
 		free(param);
 	}
