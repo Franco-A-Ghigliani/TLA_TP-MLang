@@ -269,6 +269,7 @@ expression: expression[left] SUBSTRACT expression[right]														{$$ = arit
 
 factor: ID																				{$$ = idFactorSemanticAction($1);}
 	| INTEGER																			{$$ = integerFactorSemanticAction($1);}
+	| SUBSTRACT expression[exp]															{$$ = negatedFactorSemanticAction($exp);}
 	| OPEN_PARENTHESIS expression CLOSE_PARENTHESIS										{$$ = expressionFactorSemanticAction($2);}
 	;
 
@@ -278,6 +279,6 @@ nodeReference: ID 																		{$$ = nodeReferenceSemanticAction($1, NULL);
 	
 //----------------------------------------------------------------------------------------
 //-------------------------------VECTOR---------------------------------------------------
-vector: OPEN_PARENTHESIS INTEGER[x] COMMA INTEGER[y] CLOSE_PARENTHESIS					{$$ = vectorSemanticAction($x, $y);}
+vector: OPEN_PARENTHESIS expression[x] COMMA expression[y] CLOSE_PARENTHESIS					{$$ = vectorSemanticAction($x, $y);}
 	;
 %%

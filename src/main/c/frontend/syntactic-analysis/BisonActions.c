@@ -405,6 +405,7 @@ Factor* idFactorSemanticAction(char* id){
 
 	factor->id=id;
 	factor->type=FACTOR_STRING;
+	factor->negated=false;
 	return factor;		
 }
 
@@ -414,6 +415,18 @@ Factor* integerFactorSemanticAction(int val){
 
 	factor->value=val;
 	factor->type=INTEGER_TYPE;
+	factor->negated=false;
+	return factor;		
+}
+
+
+Factor* negatedFactorSemanticAction(Expression* exp){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Factor* factor = calloc(1, sizeof(Factor));
+
+	factor->exp=exp;
+	factor->negated = true;
+	factor->type=EXPRESSION;
 	return factor;		
 }
 
@@ -423,6 +436,7 @@ Factor* expressionFactorSemanticAction(Expression* exp){
 
 	factor->exp=exp;
 	factor->type=EXPRESSION;
+	factor->negated=false;
 	return factor;		
 }
 
@@ -435,7 +449,7 @@ NodeReference * nodeReferenceSemanticAction(char * id, NodeReference * next){
 	return nodeReference;
 }
 
-Vector * vectorSemanticAction(int x, int y){
+Vector * vectorSemanticAction(Expression* x, Expression* y){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Vector * vector = calloc(1, sizeof(Vector));
 	vector->x = x;

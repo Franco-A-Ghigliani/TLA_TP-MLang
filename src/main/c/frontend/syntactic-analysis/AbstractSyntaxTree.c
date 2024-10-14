@@ -322,6 +322,12 @@ void releaseNodeReference(NodeReference* ref){
 void releaseVector(Vector* vec){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if(vec != NULL){
+		if(vec->x != NULL){
+			releaseExpression(vec->x);
+		}
+		if(vec->y != NULL){
+			releaseExpression(vec->y);
+		}
 		free(vec);
 	}
 }

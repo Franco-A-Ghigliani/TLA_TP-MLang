@@ -274,6 +274,7 @@ struct Factor {
 		char * id;
 		Expression* exp;
 	};
+	boolean negated;
 	FactorType type;
 };
 
@@ -293,8 +294,8 @@ struct SimulationParam {
 
 //------------------------------------------VECTOR----------------------------------------
 struct Vector {
-	int x;
-	int y;
+	Expression* x;
+	Expression* y;
 };
 
 /**

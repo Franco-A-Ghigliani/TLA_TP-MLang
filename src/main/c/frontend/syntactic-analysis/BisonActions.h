@@ -80,12 +80,13 @@ Expression* factorExpressionSemanticAction(Factor * factor);
 
 Factor* idFactorSemanticAction(char* id);
 Factor* integerFactorSemanticAction(int val);
+Factor* negatedFactorSemanticAction(Expression* exp);
 Factor* expressionFactorSemanticAction(Expression* exp);
 
 NodeReference* nodeReferenceSemanticAction(char* id, NodeReference * next);
 	
 //----------------------------------------------------------------------------------------
 //-------------------------------VECTOR---------------------------------------------------
-Vector* vectorSemanticAction(int x, int y);
+Vector* vectorSemanticAction(Expression* x, Expression* y);
 
 #endif

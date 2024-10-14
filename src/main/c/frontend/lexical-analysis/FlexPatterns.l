@@ -45,7 +45,7 @@
 <FORMULA>">"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), GREATER_THAN);}
 <FORMULA>"%"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), PERCENTAGE);}
 <FORMULA,CONST_VALUE>"+"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), ADD);}
-<FORMULA,CONST_VALUE>"-"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), SUBSTRACT);}
+<FORMULA,CONST_VALUE,VECTOR,NODE_PARAM_VALUE>"-"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), SUBSTRACT);}
 <FORMULA,CONST_VALUE>"*"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), MULTIPLY);}
 <FORMULA,CONST_VALUE>"/"                                                                        {return ArithmeticLexemeAction(createLexicalAnalyzerContext(), DIVIDE);}
 
@@ -81,7 +81,7 @@
 <CONST_VALUE>";"                                                                          {Token token = SemiColonLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); return token;}
 
 <NODE_PARAM_VALUE,SIM_PARAM_VALUE>\"[^\n\"]*\"                                     {return StringLexemeAction(createLexicalAnalyzerContext());}
-<NODE_PARAM_VALUE,SIM_PARAM_VALUE,VECTOR,FORMULA,CONST_VALUE>"-"?[[:digit:]]+             {return IntegerLexemeAction(createLexicalAnalyzerContext());}
+<NODE_PARAM_VALUE,SIM_PARAM_VALUE,VECTOR,FORMULA,CONST_VALUE>[[:digit:]]+             {return IntegerLexemeAction(createLexicalAnalyzerContext());}
 
 <NODE_PARAMS>"label"                                                                {return NodeParamLexemeAction(createLexicalAnalyzerContext(), NODE_LABEL);}
 <NODE_PARAMS>"position"                                                             {return NodeParamLexemeAction(createLexicalAnalyzerContext(), NODE_POSITION);}
