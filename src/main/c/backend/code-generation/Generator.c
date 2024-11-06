@@ -1,30 +1,37 @@
-// #include "Generator.h"
+#include "Generator.h"
 
-// /* MODULE INTERNAL STATE */
+/* MODULE INTERNAL STATE */
 
-// const char _indentationCharacter = ' ';
-// const char _indentationSize = 4;
-// static Logger * _logger = NULL;
+const char _indentationCharacter = ' ';
+const char _indentationSize = 4;
+static Logger *_logger = NULL;
 
-// void initializeGeneratorModule() {
-// 	_logger = createLogger("Generator");
-// }
+void initializeGeneratorModule()
+{
+    _logger = createLogger("Generator");
+}
 
-// void shutdownGeneratorModule() {
-// 	if (_logger != NULL) {
-// 		destroyLogger(_logger);
-// 	}
-// }
+void shutdownGeneratorModule()
+{
+    if (_logger != NULL)
+    {
+        destroyLogger(_logger);
+    }
+}
 
-// /** PRIVATE FUNCTIONS */
+/** PRIVATE FUNCTIONS */
 
 // static const char _expressionTypeToCharacter(const ExpressionType type);
 // static void _generateConstant(const unsigned int indentationLevel, Constant * constant);
-// static void _generateEpilogue(const int value);
+static void _generatePrologue(void);
+static void _generateEpilogue(const int value);
 // static void _generateExpression(const unsigned int indentationLevel, Expression * expression);
 // static void _generateFactor(const unsigned int indentationLevel, Factor * factor);
-// static void _generateProgram(Program * program);
-// static void _generatePrologue(void);
+static void _generateProgram(Program *program);
+static void _generateSimWrapper(SimulationWrapper *simWrapper);
+static void _generateConstant(Constant *constant);
+static void _generateSimulationTemplate(SimulationTemplate *simulationTemplate);
+static void _generateSimulation(Simulation *simulation);
 // static char * _indentation(const unsigned int indentationLevel);
 // static void _output(const unsigned int indentationLevel, const char * const format, ...);
 
@@ -53,18 +60,19 @@
 // 	_output(indentationLevel, "%s", "]\n");
 // }
 
-// /**
-//  * Creates the epilogue of the generated output, that is, the final lines that
-//  * completes a valid Latex document.
-//  */
-// static void _generateEpilogue(const int value) {
-// 	_output(0, "%s%d%s",
-// 		"            [ $", value, "$, circle, draw, blue ]\n"
-// 		"        ]\n"
-// 		"    \\end{forest}\n"
-// 		"\\end{document}\n\n"
-// 	);
-// }
+/**
+ * Creates the epilogue of the generated output, that is, the final lines that
+ * completes a valid Latex document.
+ */
+static void _generateEpilogue(const int value)
+{
+    // _output(0, "%s%d%s",
+    // 	"            [ $", value, "$, circle, draw, blue ]\n"
+    // 	"        ]\n"
+    // 	"    \\end{forest}\n"
+    // 	"\\end{document}\n\n"
+    // );
+}
 
 // /**
 //  * Generates the output of an expression.
@@ -111,33 +119,86 @@
 // 	_output(indentationLevel, "%s", "]\n");
 // }
 
-// /**
-//  * Generates the output of the program.
-//  */
-// static void _generateProgram(Program * program) {
-// 	_generateExpression(3, program->expression);
-// }
+/**
+ * Generates the output of the program.
+ */
+static void _generateProgram(Program *program) {
+    _generateSimWrapper(program->simulationWrapper);
+}
 
-// /**
-//  * Creates the prologue of the generated output, a Latex document that renders
-//  * a tree thanks to the Forest package.
-//  *
-//  * @see https://ctan.dcc.uchile.cl/graphics/pgf/contrib/forest/forest-doc.pdf
-//  */
-// static void _generatePrologue(void) {
-// 	_output(0, "%s",
-// 		"\\documentclass{standalone}\n\n"
-// 		"\\usepackage[utf8]{inputenc}\n"
-// 		"\\usepackage[T1]{fontenc}\n"
-// 		"\\usepackage{amsmath}\n"
-// 		"\\usepackage{forest}\n"
-// 		"\\usepackage{microtype}\n\n"
-// 		"\\begin{document}\n"
-// 		"    \\centering\n"
-// 		"    \\begin{forest}\n"
-// 		"        [ \\text{$=$}, circle, draw, purple\n"
-// 	);
-// }
+static void _generateSimWrapper(SimulationWrapper *simWrapper)
+{
+    switch (simWrapper->type) {
+    case CONSTANT:
+        _generateConstant(simWrapper->constant);
+        break;
+    case SIMULATION_TEMPLATE:
+        _generateSimulationTemplate(simWrapper->simulationTemplate);
+        break;
+    case SIMULATION_TYPE:
+        _generateSimulation(simWrapper->simulation);
+        break;
+    case EMPTY_PROGRAM:
+        break;
+    default:
+        logError(_logger, "The specified simWrapper type is unknown: %d", simWrapper->type);
+        break;
+    }
+
+    if (simWrapper->nextSimulationWrapper != NULL)
+        _generateSimWrapper(simWrapper->nextSimulationWrapper);
+}
+
+static void _generateConstant(Constant *constant)
+{
+    switch (constant->type)
+    {
+    case VALUE_STRING:
+        // TODO guardar string
+        break;
+    case VALUE_EXPRESSION:
+        int value = _computeExpression(constant->expression);
+        //¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡PREGUNTAR SI ESTA BIEN COMPUTAR UNA EXPRESSION ACA!!!!!!!!
+        // TODO guardar expression
+        break;
+    default:
+        logError(_logger, "The specified constant type is unknown: %d", constant->type);
+        break;
+    }
+}
+
+static void _generateSimulationTemplate(SimulationTemplate *simulationTemplate) {
+    struct elements = _processSimElements(simulationTemplate->simElements);
+    //TODO guardar template
+}
+
+static void _generateSimulation(Simulation *simulation) {
+    struct params = _processSimParams(simulation->params);
+    _generateSimulationElements(simulation->simElements);
+    //TODO generar linea con la simulation armada
+}
+
+/**
+ * Creates the prologue of the generated output, a Latex document that renders
+ * a tree thanks to the Forest package.
+ *
+ * @see https://ctan.dcc.uchile.cl/graphics/pgf/contrib/forest/forest-doc.pdf
+ */
+static void _generatePrologue(void)
+{
+    // _output(0, "%s",
+    // 	"\\documentclass{standalone}\n\n"
+    // 	"\\usepackage[utf8]{inputenc}\n"
+    // 	"\\usepackage[T1]{fontenc}\n"
+    // 	"\\usepackage{amsmath}\n"
+    // 	"\\usepackage{forest}\n"
+    // 	"\\usepackage{microtype}\n\n"
+    // 	"\\begin{document}\n"
+    // 	"    \\centering\n"
+    // 	"    \\begin{forest}\n"
+    // 	"        [ \\text{$=$}, circle, draw, purple\n"
+    // );
+}
 
 // /**
 //  * Generates an indentation string for the specified level.
@@ -165,10 +226,11 @@
 
 // /** PUBLIC FUNCTIONS */
 
-// void generate(CompilerState * compilerState) {
-// 	logDebugging(_logger, "Generating final output...");
-// 	_generatePrologue();
-// 	_generateProgram(compilerState->abstractSyntaxtTree);
-// 	_generateEpilogue(compilerState->value);
-// 	logDebugging(_logger, "Generation is done.");
-// }
+void generate(CompilerState *compilerState)
+{
+    logDebugging(_logger, "Generating final output...");
+    _generatePrologue();
+    _generateProgram(compilerState->abstractSyntaxtTree);
+    _generateEpilogue(compilerState->value);
+    logDebugging(_logger, "Generation is done.");
+}
