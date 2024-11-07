@@ -2,22 +2,44 @@
 #define SYMBOL_TABLE_H
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 
-typedef enum {INT, STRING, NODE, NODE_TEMPLATE, NODE_TEMPLATE_INSTANCE, SIM_TEMPLATE, SIM_TEMPLATE_INSTANCE} Types;
+typedef struct SymbolTableManager* SymbolTableManagerADT;
+typedef struct SymbolTable* SymbolTableADT;
 
-typedef struct Node
+typedef enum
+{
+    INT,
+    STRING,
+    NODE,
+    NODE_TEMPLATE,
+    NODE_TEMPLATE_INSTANCE,
+    SIM_TEMPLATE,
+    SIM_TEMPLATE_INSTANCE,
+    BOTTOM
+} SymbolTableValueType;
+
+typedef struct SymbolTableItem
+{
+    char *id;
+    SymbolTableValueType type;
+    SymbolTableValue value;
+
+    SymbolTableItem *next;
+} SymbolTableItem;
+
+typedef struct NodeSymbol
 {
     NodeType type;
 
     struct commonParams
     {
-        char * label;
+        char *label;
         Vector position;
         boolean randomDistribution;
         Activation activation;
         ActivationMode activationMode;
         Color resourcesColor;
     };
-    
+
     struct poolParams
     {
         int initialResources;
@@ -33,25 +55,40 @@ typedef struct Node
         boolean delayIsQueue;
         boolean gateIsRandomDistribution;
     };
-} Node;
+} NodeSymbol;
 
-typedef union SymbolTableValues
+typedef struct SimulationTemplateSymbol
 {
-    char* stringValue;
+    SymbolTableADT internalSymbolTable;
+} SimulationTemplateSymbol;
+
+typedef union SymbolTableValue
+{
+    char *stringValue;
     int intValue;
     NodeType nodeValue;
-    Node nodeTemplateValue;
-    Node* templateInstanceParent;
-    
-} SymbolTableValues;
 
+    NodeSymbol nodeTemplateValue;
+    NodeSymbol *nodeTemplateInstanceParent;
 
-typedef struct SymbolTableItem
-{
-    char* id;
-    Types type;
+    SimulationTemplateSymbol simulationTemplate;
+    SimulationTemplateSymbol *simulationTemplateInstanceParent;
+} SymbolTableValue;
 
-} SymbolTableItem;
+void exitCurrentScope(SymbolTableManagerADT manager);
+SymbolTableADT getActiveScope(const SymbolTableManagerADT manager);
+void setNewActiveScope(SymbolTableManagerADT manager, SymbolTableADT newTable);
+SymbolTableADT getNextScope(const SymbolTableADT activeScope);
+void resetScope(SymbolTableManagerADT manager);
 
+// Functions to create and destroy symbol table structures
+SymbolTableManagerADT createSymbolTableManager(SymbolTableADT mainTable, SymbolTableADT simulationTable);
+void destroySymbolTableManager(SymbolTableManagerADT manager);
+SymbolTableADT createSymbolTable();
+void destroySymbolTable(SymbolTableADT table);
 
+// Functions for reading information from the SymbolTable
+SymbolTableItem getNextItem(const SymbolTableADT table);
+void addItem(SymbolTableADT table, SymbolTableItem* item);
+SymbolTableItem getItemByID(const SymbolTableADT table, const char* id);
 #endif
