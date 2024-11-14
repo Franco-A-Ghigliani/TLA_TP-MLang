@@ -42,6 +42,7 @@ static PairList* rehash(HashTableADT table){
 
     table->table = newTable;
     table->size *= 2; 
+    table->slotsOccupied = 0;
 
     for (size_t i = 0; i < oldSize; i++)
     {
@@ -81,15 +82,17 @@ void h_put(HashTableADT table, const char* key, const SymbolTableItem *value){
     while (current != NULL)
     {
         if(strcmp(key, current->key) == 0){ //If the key already exists, assign new value
+            freeSymbolTableItem(current->value);
             current->value = value;
         } else if(current->next == NULL){   //If this is the last item, add it to the end of the list
             Pair * newElem = calloc(1, sizeof(Pair));
             newElem->key = malloc(sizeof(char) * (strlen(key) + 1));
-            strcpy(newElem, key);
+            strcpy(newElem->key, key);
             newElem->value = value;
             current->next = newElem;
             list.itemCount++;
         }
+        current = current->next;
     }
     if(((float)(table->size)/(float)(table->slotsOccupied)) > LOAD_THRESHOLD){
         table = rehash(table);
@@ -106,13 +109,17 @@ SymbolTableItem* h_get(HashTableADT table, const char* key){
         if(strcmp(key, current->key) == 0){ //Found it
             return &(current->value);
         }
+        current = current->next;
     }
     return NULL;
 }
 
 void h_destroy(HashTableADT table){
-    freeListTable(table->table, table->size);
-    free(table);
+    if(table != NULL){
+        if(table->table != NULL)
+            freeListTable(table->table, table->size);
+        free(table);
+    }
 }
 
 static void freeListTable(PairList *list, unsigned long size){
@@ -125,6 +132,7 @@ static void freeListTable(PairList *list, unsigned long size){
                 free(current->key);
                 freeSymbolTableItem(current->value);
             }
+            current = current->next;
         }
     }
 }
