@@ -45,32 +45,53 @@ void resetScope(SymbolTableManagerADT manager){
 
 SymbolTableManagerADT createSymbolTableManager(SymbolTableADT mainTable, SymbolTableADT simulationTable){
     SymbolTableManager* manager = malloc(sizeof(SymbolTableManager));
-    manager->mainTable = mainTable;
-    manager->simulationTable = simulationTable;
-    manager->activeTable = mainTable;
+    if (manager != NULL) {
+        manager->mainTable = mainTable;
+        manager->simulationTable = simulationTable;
+        manager->activeTable = mainTable;
+    }
     return manager;
 }
 
 void destroySymbolTableManager(SymbolTableManagerADT manager){
-    destroySymbolTable(manager->simulationTable);
-    destroySymbolTable(manager->mainTable);
-    free(manager);
+    if (manager != NULL) {
+        if (manager->simulationTable != NULL) {
+            destroySymbolTable(manager->simulationTable);
+            manager->simulationTable = NULL; // Prevent accidental reuse
+        }
+        if (manager->mainTable != NULL) {
+            destroySymbolTable(manager->mainTable);
+            manager->mainTable = NULL;
+        }
+        free(manager);
+    }
 }
 
 SymbolTableADT createSymbolTable(){
-    return malloc(sizeof(SymbolTable));
+    SymbolTableADT table = calloc(1, sizeof(SymbolTable));
+    if(table != NULL){
+        table->table = h_init();
+    }
+    return table;
 }
 
 void destroySymbolTable(SymbolTableADT table){
     if(table != NULL){
         h_destroy(table->table);
-        destroySymbolTable(table->lastActiveTable);
+        table->table = NULL;
+        if (table->lastActiveTable != NULL) {
+            SymbolTable *last = table->lastActiveTable;
+            table->lastActiveTable = NULL; // Break link before recursive free
+            destroySymbolTable(last);
+        }
         free(table);
     }
 }
 
 void addItem(SymbolTableADT table, SymbolTableItem* item){
-    h_put(table->table, item->id, item);
+    if (table != NULL && item != NULL && item->id != NULL) {
+        h_put(table->table, item->id, item);
+    }
 }
 
 SymbolTableItem* getItemByID(const SymbolTableADT table, const char* id){
@@ -81,15 +102,25 @@ void freeSymbolTableItem(SymbolTableItem* item){
     switch (item->type)
     {
         case STRING:
-            free(item->value.stringValue);
+            if(item->value.stringValue != NULL){
+                free(item->value.stringValue);
+                item->value.stringValue = NULL;
+            }
             break;
         case NODE_TEMPLATE:
-            free(item->value.nodeTemplateValue.commonParams.label);
+            if(item->value.nodeTemplateValue.commonParams.label != NULL){
+                free(item->value.nodeTemplateValue.commonParams.label);
+                item->value.nodeTemplateValue.commonParams.label = NULL;
+            }
             break;
         case SIM_TEMPLATE:
-            destroySymbolTable(item->value.simulationTemplate.internalSymbolTable);
+            if(item->value.simulationTemplate.internalSymbolTable != NULL){
+                destroySymbolTable(item->value.simulationTemplate.internalSymbolTable);
+                item->value.simulationTemplate.internalSymbolTable = NULL;
+            }
             break;
         default:
             break;
     }
+    free(item);
 }
