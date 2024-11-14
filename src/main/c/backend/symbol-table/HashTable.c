@@ -4,7 +4,7 @@
 #define INITIAL_TABLE_SIZE 100
 #define LOAD_THRESHOLD 0.75f
 
-static void freeListTable(PairList *list, unsigned long size);
+static void freeListTable(PairList *table, unsigned long size);
 
 typedef struct Pair {
     char *key;
@@ -23,7 +23,7 @@ typedef struct HashTable {
     PairList *table;
 } HashTable;
 
-static unsigned long hash(unsigned char *str)
+static unsigned long hash(const unsigned char *str)
 {
     unsigned long hash = 5381;
     int c;
@@ -34,7 +34,7 @@ static unsigned long hash(unsigned char *str)
     return hash;
 }
 
-static PairList* rehash(HashTableADT table){
+static void rehash(HashTableADT table){
     unsigned long oldSize = table->size;
 
     PairList *newTable = calloc(oldSize * 2, sizeof(PairList));
@@ -52,15 +52,12 @@ static PairList* rehash(HashTableADT table){
             while (current != NULL)
             {
                 h_put(table, current->key, current->value);
+                current = current->next;
             }
         }
     }
 
     freeListTable(oldTable, oldSize);
-
-    if(((float)(table->size)/(float)(table->slotsOccupied)) > LOAD_THRESHOLD){
-        table = rehash(table);
-    }
 }
 
 HashTableADT h_init(){
@@ -70,32 +67,42 @@ HashTableADT h_init(){
     return table;
 }
 
-void h_put(HashTableADT table, const char* key, const SymbolTableItem *value){
+void h_put(HashTableADT table, const char* key, SymbolTableItem *value){
     unsigned long hashVal = hash(key) % table->size;
-    PairList list = (table->table)[hashVal];
+    PairList* list = &((table->table)[hashVal]);
 
-    if(list.itemCount == 0){
+    if(list->itemCount == 0){    //If there are no items in the slot, add it first on the list
         table->slotsOccupied++;
-    }
 
-    Pair *current = list.first;
-    while (current != NULL)
-    {
-        if(strcmp(key, current->key) == 0){ //If the key already exists, assign new value
-            freeSymbolTableItem(current->value);
-            current->value = value;
-        } else if(current->next == NULL){   //If this is the last item, add it to the end of the list
-            Pair * newElem = calloc(1, sizeof(Pair));
-            newElem->key = malloc(sizeof(char) * (strlen(key) + 1));
-            strcpy(newElem->key, key);
-            newElem->value = value;
-            current->next = newElem;
-            list.itemCount++;
+        Pair * newElem = calloc(1, sizeof(Pair));
+        newElem->key = malloc(sizeof(char) * (strlen(key) + 1));
+        strcpy(newElem->key, key);
+        newElem->value = value;
+        list->first = newElem;
+        list->itemCount++;
+    } else{                     //Otherwise, look for it in the list if it exists
+        Pair *current = list->first;
+        while (current != NULL)
+        {
+            if(strcmp(key, current->key) == 0){ //If the key already exists, assign new value
+                freeSymbolTableItem(current->value);
+                current->value = value;
+                break;
+            } else if(current->next == NULL){   //If this is the last item, add it to the end of the list
+                Pair * newElem = calloc(1, sizeof(Pair));
+                newElem->key = malloc(sizeof(char) * (strlen(key) + 1));
+                strcpy(newElem->key, key);
+                newElem->value = value;
+                current->next = newElem;
+                list->itemCount++;
+                break;
+            }
+            current = current->next;
         }
-        current = current->next;
     }
-    if(((float)(table->size)/(float)(table->slotsOccupied)) > LOAD_THRESHOLD){
-        table = rehash(table);
+    
+    if(((float)(table->slotsOccupied)/(float)(table->size)) > LOAD_THRESHOLD){
+        rehash(table);
     }
 }
 
@@ -107,7 +114,7 @@ SymbolTableItem* h_get(HashTableADT table, const char* key){
     while (current != NULL)
     {
         if(strcmp(key, current->key) == 0){ //Found it
-            return &(current->value);
+            return current->value;
         }
         current = current->next;
     }
@@ -122,17 +129,22 @@ void h_destroy(HashTableADT table){
     }
 }
 
-static void freeListTable(PairList *list, unsigned long size){
+static void freeListTable(PairList *table, unsigned long size){
     for (size_t i = 0; i < size; i++)
     {
+        PairList *list = &(table[i]);
         if(list->itemCount > 0){
             Pair *current = list->first;
             while (current != NULL)
             {
                 free(current->key);
                 freeSymbolTableItem(current->value);
+                Pair *aux = current->next;
+                free(current);
+                current = aux;
             }
-            current = current->next;
+            list->first = NULL;
+            list->itemCount = 0;
         }
     }
 }
