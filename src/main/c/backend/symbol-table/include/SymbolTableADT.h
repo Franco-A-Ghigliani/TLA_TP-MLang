@@ -22,8 +22,6 @@ typedef struct SymbolTableItem
     char *id;
     SymbolTableValueType type;
     SymbolTableValue value;
-
-    SymbolTableItem *next;
 } SymbolTableItem;
 
 typedef struct NodeSymbol
@@ -34,11 +32,10 @@ typedef struct NodeSymbol
     {
         char *label;
         Vector position;
-        boolean randomDistribution;
         Activation activation;
         ActivationMode activationMode;
         Color resourcesColor;
-    };
+    } commonParams;
 
     struct poolParams
     {
@@ -47,14 +44,14 @@ typedef struct NodeSymbol
         int capacity;
         int numberDisplayThreshold;
         boolean drainOnOverflow;
-    };
+    } poolParams;
 
     struct extraParams
     {
         boolean converterMulticonversion;
         boolean delayIsQueue;
         boolean gateIsRandomDistribution;
-    };
+    } extraParams;
 } NodeSymbol;
 
 typedef struct SimulationTemplateSymbol
@@ -88,7 +85,7 @@ SymbolTableADT createSymbolTable();
 void destroySymbolTable(SymbolTableADT table);
 
 // Functions for reading information from the SymbolTable
-SymbolTableItem getNextItem(const SymbolTableADT table);
 void addItem(SymbolTableADT table, SymbolTableItem* item);
 SymbolTableItem getItemByID(const SymbolTableADT table, const char* id);
+void freeSymbolTableItem(SymbolTableItem* item);
 #endif

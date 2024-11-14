@@ -1,6 +1,5 @@
-#ifndef SYMBOL_TABLE_CDT
-#define SYMBOL_TABLE_CDT
-#include "SymbolTableADT.h"
+#include <SymbolTableADT.h>
+#include <HashTable.h>
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 
 typedef struct SymbolTable SymbolTable;
@@ -17,8 +16,7 @@ typedef struct SymbolTableManager
 
 typedef struct SymbolTable
 {
-    SymbolTableItem *first;
-    SymbolTableItem *current;
+    HashTableADT table;
     SymbolTable *lastActiveTable;
 } SymbolTable;
 
@@ -64,27 +62,34 @@ SymbolTableADT createSymbolTable(){
 }
 
 void destroySymbolTable(SymbolTableADT table){
-    //ESPERAR A CAMBIARLO A UN HASH
-    //RECURSIVO EN LAS TABLAS INTERNAS
-}
-
-SymbolTableItem getNextItem(const SymbolTableADT table){
-    SymbolTableItem *first = table->first;
-    SymbolTableItem ret;
-    ret.id = first->id;
-    ret.next = NULL;
-    ret.type = first->type;
-    ret.value = first->value;
-    return ret;
+    if(table != NULL){
+        h_destroy(table->table);
+        destroySymbolTable(table->lastActiveTable);
+        free(table);
+    }
 }
 
 void addItem(SymbolTableADT table, SymbolTableItem* item){
-    //ESPERAR A CAMBIARLO A UN HASH
+    h_put(table->table, item->id, item);
 }
 
 SymbolTableItem* getItemByID(const SymbolTableADT table, const char* id){
-    //ESPERAR A CAMBIARLO A UN HASH
-    //RECURSIVO EN LAS TABLAS ACTIVAS
+    return h_get(table->table, id);
 }
 
-#endif
+void freeSymbolTableItem(SymbolTableItem* item){
+    switch (item->type)
+    {
+        case STRING:
+            free(item->value.stringValue);
+            break;
+        case NODE_TEMPLATE:
+            free(item->value.nodeTemplateValue.commonParams.label);
+            break;
+        case SIM_TEMPLATE:
+            destroySymbolTable(item->value.simulationTemplate.internalSymbolTable);
+            break;
+        default:
+            break;
+    }
+}
