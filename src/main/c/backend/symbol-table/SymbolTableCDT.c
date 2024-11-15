@@ -94,8 +94,17 @@ void addItem(SymbolTableADT table, SymbolTableItem* item){
     }
 }
 
-SymbolTableItem* getItemByID(const SymbolTableADT table, const char* id){
-    return h_get(table->table, id);
+SymbolTableItem* getItemByID(const SymbolTableManagerADT manager, const char* id){
+    SymbolTableADT currentTable = manager->activeTable;
+    while (currentTable != NULL)
+    {
+        SymbolTableItem *item =  h_get(currentTable->table, id);
+        if(item != NULL){
+            return item;
+        }
+        currentTable = currentTable->lastActiveTable;
+    }
+    return NULL;
 }
 
 void freeSymbolTableItem(SymbolTableItem* item){

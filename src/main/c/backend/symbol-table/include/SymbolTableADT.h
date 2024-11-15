@@ -86,6 +86,6 @@ void destroySymbolTable(SymbolTableADT table);
 
 // Functions for reading information from the SymbolTable
 void addItem(SymbolTableADT table, SymbolTableItem* item);
-SymbolTableItem getItemByID(const SymbolTableADT table, const char* id);
+SymbolTableItem getItemByID(const SymbolTableManagerADT table, const char* id);
 void freeSymbolTableItem(SymbolTableItem* item);
 #endif
