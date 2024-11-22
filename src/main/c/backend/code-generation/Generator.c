@@ -41,7 +41,7 @@ static void _generatePrologue(SimulationComputed* simulation) {
     time_t now = time(NULL);
     struct tm* localTime = localtime(&now);
     char dateBuffer[100];
-    strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d %H:%M:%S", localTime);
+    strftime(dateBuffer, sizeof(dateBuffer), "%m/%d/%Y %H:%M:%S", localTime);
     fprintf(csvFile, ",Creation Date:,%s\n", dateBuffer);
     fprintf(csvFile, ",Last Change:,%s\n", dateBuffer);
 
@@ -57,6 +57,7 @@ static void _generateEpilogue() {
     fprintf(csvFile, "ID,Label,Parent Layer ID,Visible,Locked\n");
     //fprintf(csvFile, "103,,,true,false\n");
     fprintf(csvFile, "%d,,,true,false\n", DEFAULT_LAYER);
+    fprintf(csvFile,"\n");
 }
 
 static char* _activationToString(Activation activation) {
@@ -64,7 +65,7 @@ static char* _activationToString(Activation activation) {
     case AUTOMATIC:
         return "automatic";
     case ON_START:
-        return "onStart";
+        return "onstart";
     case PASSIVE:
         return "passive";
     case INTERACTIVE:
@@ -107,13 +108,36 @@ static char* _drainOnOverflowToString(boolean overflow) {
 static char * _distributionToString(boolean distribution) {
     if (distribution)
         return "dice";
-    //TODO ver cual es el otro
-    return "";
+    return "deterministic";
+}
+
+static char* _formulaTypeToString(FormulaType type) {
+    switch (type) {
+    case PERCENTAGE_TYPE: return "%";
+    case GREATER_THAN_TYPE: return ">";
+    case LESS_THAN_TYPE: return "<";
+    case FORMULA_EXPRESSION: return "";
+    }
+}
+
+static char * _expressionToString(Expression * expression) {
+    char buffer[64];
+    switch (expression->type) {
+    case FACTOR:
+        snprintf(buffer, sizeof(buffer), "%d", expression->factor->value);
+    }
+    return strdup(buffer);
 }
 
 static char * _formulaToString(Formula formula) {
-    //TODO
-    return "1";
+    const char *typeString = _formulaTypeToString(formula.type);
+    const char *expressionString = _expressionToString(formula.expression);
+
+    char result[64];
+    snprintf(result, sizeof(result), "%s%s", typeString, expressionString);
+
+    free(expressionString);
+    return strdup(result);
 }
 
 static void _generateSources(NodeComputed* source) {
@@ -146,7 +170,9 @@ static void _generateConverters(NodeComputed * converter) {
 }
 
 static void _generateConnections(ConnectionComputed * connections) {
-    fprintf(csvFile, "%u,,%u,,,,%s,,%u,%u,interval-based,FALSE,Black,FALSE,,,0\n", connections->id, DEFAULT_LAYER, _formulaToString(connections->formula), connections->sourceId, connections->targetId);
+    char * formula = _formulaToString(connections->formula);
+    fprintf(csvFile, "%u,,%u,,,,%s,,%u,%u,interval-based,FALSE,Black,FALSE,,,0\n", connections->id, DEFAULT_LAYER, formula, connections->sourceId, connections->targetId);
+    free(formula);
     if (connections->next != NULL)
         _generateConnections(connections->next);
 }
