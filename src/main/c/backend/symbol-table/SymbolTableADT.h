@@ -17,6 +17,8 @@ typedef enum
     BOTTOM
 } SymbolTableValueType;
 
+typedef union SymbolTableValue SymbolTableValue;    
+
 typedef struct SymbolTableItem
 {
     char *id;

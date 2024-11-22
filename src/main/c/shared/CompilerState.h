@@ -2,6 +2,9 @@
 #define COMPILER_STATE_HEADER
 
 #include "Type.h"
+#include "../backend/symbol-table/SymbolTableADT.h"
+#include "../backend/compute-structures/Computer.h"
+
 
 /**
  * The general status of a compilation.
@@ -22,7 +25,8 @@ typedef struct {
 	// A flag that indicates the current state of the compilation so far.
 	boolean succeed;
 
-	SymbolTableManagerADT symbolTables;	
+	SymbolTableManagerADT symbolTables;
+	SimulationComputed * simulation;
 } CompilerState;
 
 #endif

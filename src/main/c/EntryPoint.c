@@ -1,4 +1,5 @@
 #include "backend/code-generation/Generator.h"
+#include "backend/compute-structures/Computer.h"
 #include "backend/semantic-validation/Validator.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
@@ -21,7 +22,7 @@ const int main(const int count, const char ** arguments) {
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
 	initializeValidatorModule();
-	// initializeGeneratorModule();
+	initializeGeneratorModule();
 
 	// Logs the arguments of the application.
 	for (int k = 0; k < count; ++k) {
@@ -32,7 +33,8 @@ const int main(const int count, const char ** arguments) {
 	CompilerState compilerState = {
 		.abstractSyntaxtTree = NULL,
 		.succeed = false,
-		.symbolTables = NULL
+		.symbolTables = NULL,
+		.simulation = NULL,
 	};
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
@@ -51,7 +53,14 @@ const int main(const int count, const char ** arguments) {
 		Program * program = compilerState.abstractSyntaxtTree;
 		boolean isValid = validate(&compilerState);
 		if (isValid) {
-			generate(&compilerState);
+			ComputationResult * computationResult = compute(program->simulationWrapper);
+			if (computationResult->success) {
+				compilerState.simulation = computationResult->value;
+				generate(&compilerState);
+			} else {
+				logError(logger, "The computation phase rejects the input program.");
+				compilationStatus = FAILED;
+			}
 		}
 		else {
 			logError(logger, "The validation phase rejects the input program.");

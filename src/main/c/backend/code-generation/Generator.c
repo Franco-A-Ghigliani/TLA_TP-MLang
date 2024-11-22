@@ -1,182 +1,29 @@
 #include "Generator.h"
 
+#include <time.h>
+
+#include "../symbol-table/SymbolTableADT.h"
 /* MODULE INTERNAL STATE */
 
-const char _indentationCharacter = ' ';
-const char _indentationSize = 4;
-static Logger *_logger = NULL;
+#define DEFAULT_LAYER 104
 
-void initializeGeneratorModule()
-{
+static Logger* _logger = NULL;
+
+static const char* csvName = "result.csv";
+SymbolTableManagerADT manager;
+static FILE* csvFile;
+
+void initializeGeneratorModule() {
     _logger = createLogger("Generator");
 }
 
-void shutdownGeneratorModule()
-{
-    if (_logger != NULL)
-    {
+void shutdownGeneratorModule() {
+    if (_logger != NULL) {
         destroyLogger(_logger);
     }
 }
 
 /** PRIVATE FUNCTIONS */
-
-// static const char _expressionTypeToCharacter(const ExpressionType type);
-// static void _generateConstant(const unsigned int indentationLevel, Constant * constant);
-static void _generatePrologue(void);
-static void _generateEpilogue(const int value);
-// static void _generateExpression(const unsigned int indentationLevel, Expression * expression);
-// static void _generateFactor(const unsigned int indentationLevel, Factor * factor);
-static void _generateProgram(Program *program);
-static void _generateSimWrapper(SimulationWrapper *simWrapper);
-static void _generateConstant(Constant *constant);
-static void _generateSimulationTemplate(SimulationTemplate *simulationTemplate);
-static void _generateSimulation(Simulation *simulation);
-// static char * _indentation(const unsigned int indentationLevel);
-// static void _output(const unsigned int indentationLevel, const char * const format, ...);
-
-// /**
-//  * Converts and expression type to the proper character of the operation
-//  * involved, or returns '\0' if that's not possible.
-//  */
-// static const char _expressionTypeToCharacter(const ExpressionType type) {
-// 	switch (type) {
-// 		case ADDITION: return '+';
-// 		case DIVISION: return '/';
-// 		case MULTIPLICATION: return '*';
-// 		case SUBTRACTION: return '-';
-// 		default:
-// 			logError(_logger, "The specified expression type cannot be converted into character: %d", type);
-// 			return '\0';
-// 	}
-// }
-
-// /**
-//  * Generates the output of a constant.
-//  */
-// static void _generateConstant(const unsigned int indentationLevel, Constant * constant) {
-// 	_output(indentationLevel, "%s", "[ $C$, circle, draw, black!20\n");
-// 	_output(1 + indentationLevel, "%s%d%s", "[ $", constant->value, "$, circle, draw ]\n");
-// 	_output(indentationLevel, "%s", "]\n");
-// }
-
-/**
- * Creates the epilogue of the generated output, that is, the final lines that
- * completes a valid Latex document.
- */
-static void _generateEpilogue(const int value)
-{
-    // _output(0, "%s%d%s",
-    // 	"            [ $", value, "$, circle, draw, blue ]\n"
-    // 	"        ]\n"
-    // 	"    \\end{forest}\n"
-    // 	"\\end{document}\n\n"
-    // );
-}
-
-// /**
-//  * Generates the output of an expression.
-//  */
-// static void _generateExpression(const unsigned int indentationLevel, Expression * expression) {
-// 	_output(indentationLevel, "%s", "[ $E$, circle, draw, black!20\n");
-// 	switch (expression->type) {
-// 		case ADDITION:
-// 		case DIVISION:
-// 		case MULTIPLICATION:
-// 		case SUBTRACTION:
-// 			_generateExpression(1 + indentationLevel, expression->leftExpression);
-// 			_output(1 + indentationLevel, "%s%c%s", "[ $", _expressionTypeToCharacter(expression->type), "$, circle, draw, purple ]\n");
-// 			_generateExpression(1 + indentationLevel, expression->rightExpression);
-// 			break;
-// 		case FACTOR:
-// 			_generateFactor(1 + indentationLevel, expression->factor);
-// 			break;
-// 		default:
-// 			logError(_logger, "The specified expression type is unknown: %d", expression->type);
-// 			break;
-// 	}
-// 	_output(indentationLevel, "%s", "]\n");
-// }
-
-// /**
-//  * Generates the output of a factor.
-//  */
-// static void _generateFactor(const unsigned int indentationLevel, Factor * factor) {
-// 	_output(indentationLevel, "%s", "[ $F$, circle, draw, black!20\n");
-// 	switch (factor->type) {
-// 		case CONSTANT:
-// 			_generateConstant(1 + indentationLevel, factor->constant);
-// 			break;
-// 		case EXPRESSION:
-// 			_output(1 + indentationLevel, "%s", "[ $($, circle, draw, purple ]\n");
-// 			_generateExpression(1 + indentationLevel, factor->expression);
-// 			_output(1 + indentationLevel, "%s", "[ $)$, circle, draw, purple ]\n");
-// 			break;
-// 		default:
-// 			logError(_logger, "The specified factor type is unknown: %d", factor->type);
-// 			break;
-// 	}
-// 	_output(indentationLevel, "%s", "]\n");
-// }
-
-/**
- * Generates the output of the program.
- */
-static void _generateProgram(Program *program) {
-    _generateSimWrapper(program->simulationWrapper);
-}
-
-static void _generateSimWrapper(SimulationWrapper *simWrapper)
-{
-    switch (simWrapper->type) {
-    case CONSTANT:
-        _generateConstant(simWrapper->constant);
-        break;
-    case SIMULATION_TEMPLATE:
-        _generateSimulationTemplate(simWrapper->simulationTemplate);
-        break;
-    case SIMULATION_TYPE:
-        _generateSimulation(simWrapper->simulation);
-        break;
-    case EMPTY_PROGRAM:
-        break;
-    default:
-        logError(_logger, "The specified simWrapper type is unknown: %d", simWrapper->type);
-        break;
-    }
-
-    if (simWrapper->nextSimulationWrapper != NULL)
-        _generateSimWrapper(simWrapper->nextSimulationWrapper);
-}
-
-static void _generateConstant(Constant *constant)
-{
-    switch (constant->type)
-    {
-    case VALUE_STRING:
-        // TODO guardar string
-        break;
-    case VALUE_EXPRESSION:
-        int value = _computeExpression(constant->expression);
-        //¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡PREGUNTAR SI ESTA BIEN COMPUTAR UNA EXPRESSION ACA!!!!!!!!
-        // TODO guardar expression
-        break;
-    default:
-        logError(_logger, "The specified constant type is unknown: %d", constant->type);
-        break;
-    }
-}
-
-static void _generateSimulationTemplate(SimulationTemplate *simulationTemplate) {
-    struct elements = _processSimElements(simulationTemplate->simElements);
-    //TODO guardar template
-}
-
-static void _generateSimulation(Simulation *simulation) {
-    struct params = _processSimParams(simulation->params);
-    _generateSimulationElements(simulation->simElements);
-    //TODO generar linea con la simulation armada
-}
 
 /**
  * Creates the prologue of the generated output, a Latex document that renders
@@ -184,53 +31,187 @@ static void _generateSimulation(Simulation *simulation) {
  *
  * @see https://ctan.dcc.uchile.cl/graphics/pgf/contrib/forest/forest-doc.pdf
  */
-static void _generatePrologue(void)
-{
-    // _output(0, "%s",
-    // 	"\\documentclass{standalone}\n\n"
-    // 	"\\usepackage[utf8]{inputenc}\n"
-    // 	"\\usepackage[T1]{fontenc}\n"
-    // 	"\\usepackage{amsmath}\n"
-    // 	"\\usepackage{forest}\n"
-    // 	"\\usepackage{microtype}\n\n"
-    // 	"\\begin{document}\n"
-    // 	"    \\centering\n"
-    // 	"    \\begin{forest}\n"
-    // 	"        [ \\text{$=$}, circle, draw, purple\n"
-    // );
+static void _generatePrologue(SimulationComputed* simulation) {
+    fprintf(csvFile, "\n");
+    fprintf(csvFile, "DIAGRAM PROPERTIES\n");
+    fprintf(csvFile, ",Name:,%s\n", simulation->name);
+    fprintf(csvFile, ",URL:,None\n");
+    fprintf(csvFile, ",Owner:,None\n");
+
+    time_t now = time(NULL);
+    struct tm* localTime = localtime(&now);
+    char dateBuffer[100];
+    strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d %H:%M:%S", localTime);
+    fprintf(csvFile, ",Creation Date:,%s\n", dateBuffer);
+    fprintf(csvFile, ",Last Change:,%s\n", dateBuffer);
+
+    fprintf(csvFile, ",Time Interval:,%u\n", simulation->timeInterval);
+    fprintf(csvFile, ",Time Steps Limit:,%u\n", simulation->timeStepsLimit);
+    fprintf(csvFile, ",Number of Runs (total):,%d\n", simulation->numberOfRuns);
+    fprintf(csvFile, ",Exporting Codec:,v2.0\n");
+    fprintf(csvFile, "\n");
 }
 
-// /**
-//  * Generates an indentation string for the specified level.
-//  */
-// static char * _indentation(const unsigned int level) {
-// 	return indentation(_indentationCharacter, level, _indentationSize);
-// }
+static void _generateEpilogue() {
+    fprintf(csvFile, "LAYERS\n");
+    fprintf(csvFile, "ID,Label,Parent Layer ID,Visible,Locked\n");
+    //fprintf(csvFile, "103,,,true,false\n");
+    fprintf(csvFile, "%d,,,true,false\n", DEFAULT_LAYER);
+}
 
-// /**
-//  * Outputs a formatted string to standard output. The "fflush" instruction
-//  * allows to see the output even close to a failure, because it drops the
-//  * buffering.
-//  */
-// static void _output(const unsigned int indentationLevel, const char * const format, ...) {
-// 	va_list arguments;
-// 	va_start(arguments, format);
-// 	char * indentation = _indentation(indentationLevel);
-// 	char * effectiveFormat = concatenate(2, indentation, format);
-// 	vfprintf(stdout, effectiveFormat, arguments);
-// 	fflush(stdout);
-// 	free(effectiveFormat);
-// 	free(indentation);
-// 	va_end(arguments);
-// }
+static char* _activationToString(Activation activation) {
+    switch (activation) {
+    case AUTOMATIC:
+        return "automatic";
+    case ON_START:
+        return "onStart";
+    case PASSIVE:
+        return "passive";
+    case INTERACTIVE:
+        return "interactive";
+    }
+}
+
+static char* _colorToString(Color color) {
+    switch (color) {
+    case BLACK:
+        return "Black";
+    case RED:
+        return "Red";
+    case GREEN:
+        return "Green";
+    case BLUE:
+        return "Blue";
+    }
+}
+
+static char* _activationModeToString(ActivationMode activationMode) {
+    switch (activationMode) {
+    case PUSH_ALL:
+        return "push-all";
+    case PUSH_ANY:
+        return "push-any";
+    case PULL_ALL:
+        return "pull-all";
+    case PULL_ANY:
+        return "pull-any";
+    }
+}
+
+static char* _drainOnOverflowToString(boolean overflow) {
+    if (overflow)
+        return "drain";
+    return "block";
+}
+
+static char * _distributionToString(boolean distribution) {
+    if (distribution)
+        return "dice";
+    //TODO ver cual es el otro
+    return "";
+}
+
+static char * _formulaToString(Formula formula) {
+    //TODO
+    return "1";
+}
+
+static void _generateSources(NodeComputed* source) {
+    fprintf(csvFile, "%u,%s,%u,,,,%s,%s,%s,0\n", source->id, source->name, DEFAULT_LAYER,
+            _activationToString(source->activation), _colorToString(source->color),
+            _activationModeToString(source->activationMode));
+    if (source->next != NULL)
+        _generateSources(source->next);
+}
+
+static void _generatePools(NodeComputed* pool) {
+    fprintf(csvFile, "%u,%s,%u,,,,%s,%s,%u,%s,%d,%d,%s,true,0\n", pool->id, pool->name, DEFAULT_LAYER,
+            _activationToString(pool->activation), _activationModeToString(pool->activationMode), pool->initialResources,
+            _colorToString(pool->color), pool->capacityLimit, pool->capacityDisplay,
+            _drainOnOverflowToString(pool->drainOnOverflow));
+    if (pool->next != NULL)
+        _generatePools(pool->next);
+}
+
+static void _generateGates(NodeComputed* gates) {
+    fprintf(csvFile, "%u,%s,%u,,,,%s,%s,%s,0\n", gates->id, gates->name, DEFAULT_LAYER, _activationToString(gates->activation),_activationModeToString(gates->activationMode), _distributionToString(gates->distribution));
+    if (gates->next != NULL)
+        _generateGates(gates->next);
+}
+
+static void _generateConverters(NodeComputed * converter) {
+    fprintf(csvFile, "%u,%s,%u,,,,%s,%s,%s,single,0\n", converter->id, converter->name, DEFAULT_LAYER, _activationToString(converter->activation), _activationModeToString(converter->activationMode), _colorToString(converter->color));
+    if (converter->next != NULL)
+        _generateConverters(converter->next);
+}
+
+static void _generateConnections(ConnectionComputed * connections) {
+    fprintf(csvFile, "%u,,%u,,,,%s,,%u,%u,interval-based,FALSE,Black,FALSE,,,0\n", connections->id, DEFAULT_LAYER, _formulaToString(connections->formula), connections->sourceId, connections->targetId);
+    if (connections->next != NULL)
+        _generateConnections(connections->next);
+}
+
+/**
+ * Generates the output of the program.
+ */
+static void _generateProgram(SimulationComputed* simulation) {
+    if (simulation->sources != NULL) {
+        fprintf(csvFile, "SOURCES\n");
+        fprintf(csvFile,
+                "ID,Label,Layer ID,Group ID,Geometry,Style,Activation,Resources (color),Activation Mode,Position\n");
+        _generateSources(simulation->sources);
+        fprintf(csvFile, "\n");
+    }
+
+    if (simulation->pools != NULL) {
+        fprintf(csvFile, "POOLS\n");
+        fprintf(csvFile,
+                "ID,Label,Layer ID,Group ID,Geometry,Style,Activation,Activation Mode,Resources,Resources (color),Capacity (limit),Capacity (display),Overflow,Show in chart,Position\n");
+        _generatePools(simulation->pools);
+        fprintf(csvFile, "\n");
+    }
+
+    if (simulation->gates != NULL) {
+        fprintf(csvFile, "GATES\n");
+        fprintf(csvFile, "ID,Label,Layer ID,Group ID,Geometry,Style,Activation,Activation Mode,Distribution,Position\n");
+        _generateGates(simulation->gates);
+        fprintf(csvFile, "\n");
+    }
+
+    /*
+    if (simulation->drains != NULL) {
+        fprintf(csvFile, "DRAINS\n");
+        _generateDrains(simulation->drains);
+        fprintf(csvFile, "\n");
+    }
+    */
+
+    if (simulation->converters != NULL) {
+        fprintf(csvFile, "CONVERTERS\n");
+        fprintf(csvFile, "ID,Label,Layer ID,Group ID,Geometry,Style,Activation,Activation Mode,Resources (color),Conversion,Position\n");
+        _generateConverters(simulation->converters);
+        fprintf(csvFile, "\n");
+    }
+    if (simulation->connections != NULL) {
+        fprintf(csvFile, "RESOURCE CONNECTIONS\n");
+        fprintf(csvFile, "ID,Label,Layer ID,Group ID,Geometry,Style,Formula,Interval,Source,Target,Transfer,Color Coding,Color Coding (color),Shuffle Source,Limits (minimum),Limits (maximum),Position\n");
+        _generateConnections(simulation->connections);
+        fprintf(csvFile, "\n");
+    }
+}
+
 
 // /** PUBLIC FUNCTIONS */
 
-void generate(CompilerState *compilerState)
-{
+void generate(CompilerState* compilerState) {
     logDebugging(_logger, "Generating final output...");
-    _generatePrologue();
-    _generateProgram(compilerState->abstractSyntaxtTree);
-    _generateEpilogue(compilerState->value);
+    FILE* file = fopen(csvName, "w");
+    csvFile = file;
+
+    _generatePrologue(compilerState->simulation);
+    _generateProgram(compilerState->simulation);
+    _generateEpilogue();
+
+    fclose(csvFile);
     logDebugging(_logger, "Generation is done.");
 }
