@@ -113,7 +113,7 @@ void releaseSimElements(SimElements* elems){
 			releaseSimConnection(elems->connection);
 			break;
 		
-		case NODE:
+		case NODE_TYPE:
 			releaseSimulationNode(elems->node);
 			break;
 

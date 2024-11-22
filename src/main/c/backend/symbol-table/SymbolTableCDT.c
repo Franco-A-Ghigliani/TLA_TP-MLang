@@ -118,12 +118,6 @@ void freeSymbolTableItem(SymbolTableItem* item){
                 item->value.stringValue = NULL;
             }
             break;
-        case NODE_TEMPLATE:
-            if(item->value.nodeTemplateValue.commonParams.label != NULL){
-                free(item->value.nodeTemplateValue.commonParams.label);
-                item->value.nodeTemplateValue.commonParams.label = NULL;
-            }
-            break;
         case SIM_TEMPLATE:
             if(item->value.simulationTemplate.internalSymbolTable != NULL){
                 destroySymbolTable(item->value.simulationTemplate.internalSymbolTable);

@@ -26,36 +26,6 @@ typedef struct SymbolTableItem
     SymbolTableValue value;
 } SymbolTableItem;
 
-typedef struct NodeSymbol
-{
-    NodeType type;
-
-    struct commonParams
-    {
-        char *label;
-        Vector position;
-        Activation activation;
-        ActivationMode activationMode;
-        Color resourcesColor;
-    } commonParams;
-
-    struct poolParams
-    {
-        int initialResources;
-        Color initialResourcesColor;
-        int capacity;
-        int numberDisplayThreshold;
-        boolean drainOnOverflow;
-    } poolParams;
-
-    struct extraParams
-    {
-        boolean converterMulticonversion;
-        boolean delayIsQueue;
-        boolean gateIsRandomDistribution;
-    } extraParams;
-} NodeSymbol;
-
 typedef struct SimulationTemplateSymbol
 {
     SymbolTableADT internalSymbolTable;
@@ -65,10 +35,14 @@ typedef union SymbolTableValue
 {
     char *stringValue;
     int intValue;
-    NodeType nodeValue;
 
-    NodeSymbol nodeTemplateValue;
-    NodeSymbol *nodeTemplateInstanceParent;
+    SimulationNode *nodeInTree;
+
+    struct NodeInstance
+    {
+        SimulationNode *originalTemplateInTree;
+        SimulationNode *instanceinTree;
+    } nodeInstance;
 
     SimulationTemplateSymbol simulationTemplate;
     SimulationTemplateSymbol *simulationTemplateInstanceParent;

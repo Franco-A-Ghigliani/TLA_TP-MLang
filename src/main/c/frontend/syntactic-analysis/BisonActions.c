@@ -120,7 +120,7 @@ SimElements* nodeElementsSemanticAction(SimulationNode* node, SimElements* next)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	SimElements * sim = calloc(1, sizeof(SimElements));
 	sim->node = node;
-	sim->type=NODE;
+	sim->type=NODE_TYPE;
 	sim->next = next;
 	return sim;
 }
@@ -131,8 +131,8 @@ SimElements* nodeTemplateElementsSemanticAction(SimulationNode* node, SimElement
 
 	node->isTemplate = true;
 	simElems->node = node;
-	simElems->type = NODE_TEMPLATE;
-	simElems->next = NULL;
+	simElems->type = NODE_TEMPLATE_TYPE;
+	simElems->next = next;
 	return simElems;
 }
 
