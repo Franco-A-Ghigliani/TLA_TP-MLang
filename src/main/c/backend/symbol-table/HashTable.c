@@ -1,5 +1,5 @@
-#include <HashTable.h>
-#include <SymbolTableADT.h>
+#include "HashTable.h"
+#include "SymbolTableADT.h"
 
 #define INITIAL_TABLE_SIZE 100
 #define LOAD_THRESHOLD 0.75f

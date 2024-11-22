@@ -98,7 +98,7 @@ enum ExpressionType {
 	DIVISION,
 	FACTOR,
 	MULTIPLICATION,
-	SUBTRACTION,
+	SUBSTRACTION,
 };
 
 enum ActivationMode {

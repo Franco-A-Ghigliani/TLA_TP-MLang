@@ -260,7 +260,7 @@ formula: LESS_THAN expression[exp]																		{$$ = arithmeticFormulaSeman
 	| expression[exp] 																					{$$ = arithmeticFormulaSemanticAction($exp, FORMULA_EXPRESSION);}
 	;
 
-expression: expression[left] SUBSTRACT expression[right]														{$$ = arithmeticExpressionSemanticAction($left, $right, SUBTRACTION);}
+expression: expression[left] SUBSTRACT expression[right]														{$$ = arithmeticExpressionSemanticAction($left, $right, SUBSTRACTION);}
 	| expression[left] ADD expression[right]																	{$$ = arithmeticExpressionSemanticAction($left, $right, ADDITION);}
 	| expression[left] MULTIPLY expression[right]																{$$ = arithmeticExpressionSemanticAction($left, $right, MULTIPLICATION);}
 	| expression[left] DIVIDE expression[right]	 																{$$ = arithmeticExpressionSemanticAction($left, $right, DIVISION);}

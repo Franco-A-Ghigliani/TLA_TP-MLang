@@ -1,5 +1,4 @@
 #include "backend/code-generation/Generator.h"
-#include "backend/domain-specific/Calculator.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -20,7 +19,6 @@ const int main(const int count, const char ** arguments) {
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
-	// initializeCalculatorModule();
 	// initializeGeneratorModule();
 
 	// Logs the arguments of the application.
@@ -32,14 +30,22 @@ const int main(const int count, const char ** arguments) {
 	CompilerState compilerState = {
 		.abstractSyntaxtTree = NULL,
 		.succeed = false,
-		.value = 0
+		.symbolTables = NULL
 	};
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
-		logDebugging(logger, "Computing expression value...");
+		logDebugging(logger, "Creating symbol table manager");
+		SymbolTableManagerADT manager = createSymbolTableManager();
+		if(manager == NULL){
+			logError(logger, "Error creating symbol table manager");
+		} else {
+			compilerState.symbolTables = manager;
+		}
+
+		logDebugging(logger, "Validating program semantics...");
 		Program * program = compilerState.abstractSyntaxtTree;
 		// //ComputationResult computationResult = computeExpression(program->expression);
 		// if (computationResult.succeed) {
@@ -60,9 +66,10 @@ const int main(const int count, const char ** arguments) {
 		compilationStatus = FAILED;
 	}
 
+	destroySymbolTableManager(compilerState.symbolTables);
+	
 	logDebugging(logger, "Releasing modules resources...");
 	// shutdownGeneratorModule();
-	// shutdownCalculatorModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();

@@ -1,5 +1,5 @@
-#include <SymbolTableADT.h>
-#include <HashTable.h>
+#include "SymbolTableADT.h"
+#include "HashTable.h"
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 
 typedef struct SymbolTable SymbolTable;
@@ -43,7 +43,9 @@ void resetScope(SymbolTableManagerADT manager){
     manager->activeTable = manager->mainTable;
 }
 
-SymbolTableManagerADT createSymbolTableManager(SymbolTableADT mainTable, SymbolTableADT simulationTable){
+SymbolTableManagerADT createSymbolTableManager(){
+    SymbolTableADT mainTable = createSymbolTable();
+    SymbolTableADT simulationTable = createSymbolTable();
     SymbolTableManager* manager = malloc(sizeof(SymbolTableManager));
     if (manager != NULL) {
         manager->mainTable = mainTable;
