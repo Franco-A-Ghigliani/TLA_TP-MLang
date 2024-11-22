@@ -24,12 +24,11 @@ typedef struct NodeComputed {
 typedef struct ConnectionComputed {
     unsigned id;
     Formula formula;
-    FormulaType formulaType;
     unsigned sourceId;
     unsigned targetId;
 
     struct ConnectionComputed * next;
-}ConnectionComputed;
+} ConnectionComputed;
 
 typedef struct SimulationComputed {
     char * name;

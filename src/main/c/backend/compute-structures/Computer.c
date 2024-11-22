@@ -1,8 +1,14 @@
 #include "Computer.h"
+#include "khash.h"
+
+KHASH_MAP_INIT_STR(str_int, int)
 
 static ComputationResult* computationResult;
 static SymbolTableManagerADT symbolTableManager;
-static unsigned id = 100;
+khash_t(str_int) * hashMap;
+khiter_t hashMapIter;
+
+static int id = 100;
 
 int _computeFactor(Factor* factor);
 int _computeExpression(Expression* expression);
@@ -93,7 +99,12 @@ NodeComputed * _computeNode(SimulationNode* node) {
         return;
 
     NodeComputed* nodeComputed = malloc(sizeof(NodeComputed));
-    nodeComputed->id = id++;
+    nodeComputed->id = id;
+    int ret;
+    hashMapIter = kh_put(str_int, hashMap, strdup(node->id), &ret);
+    if (ret)
+        kh_value(hashMap, hashMapIter) = id++;
+
     nodeComputed->next = NULL;
 
     _setParams(nodeComputed, node->nodeParams);
@@ -117,18 +128,41 @@ NodeComputed * _computeNode(SimulationNode* node) {
         break;
     }
 
-    if (*list == NULL) {
-        *list = nodeComputed;
-    }
-    else {
-        nodeComputed->next = *list;
-        *list = nodeComputed;
-    }
+    nodeComputed->next = *list;
+    *list = nodeComputed;
 
     return nodeComputed;
 }
 
-static void _computeConnection(SimConnection* connection) {}
+static void _computeConnection(SimConnection * connection) {
+    ConnectionComputed * connectionComputed = malloc(sizeof(ConnectionComputed));
+    connectionComputed->id = id++;
+
+    int sourceId = 0;
+    int targetId = 0;
+
+    NodeReference * from = connection->from;
+    while (from->next != NULL)
+        from = from->next;
+    hashMapIter = kh_get(str_int, hashMap, from->reference);
+    if (hashMapIter != kh_end(hashMap))
+        sourceId = kh_value(hashMap, hashMapIter);
+
+    NodeReference * to = connection->to;
+    while (to->next != NULL)
+        to = to->next;
+    hashMapIter = kh_get(str_int, hashMap, to->reference);
+    if (hashMapIter != kh_end(hashMap))
+        targetId = kh_value(hashMap, hashMapIter);
+
+    connectionComputed->sourceId = sourceId;
+    connectionComputed->targetId = targetId;
+
+    connectionComputed->next = computationResult->value->connections;
+    computationResult->value->connections = connectionComputed;
+
+
+}
 
 static void _computeSimElements(SimElements* elements) {
     switch (elements->type) {
@@ -199,6 +233,7 @@ ComputationResult* compute(CompilerState* compilerState) {
 
     computationResult = computed;
     symbolTableManager = compilerState->symbolTables;
+    hashMap = kh_init(str_int);
 
     _computeSimulationWrapper(((Program*)compilerState->abstractSyntaxtTree)->simulationWrapper);
 
