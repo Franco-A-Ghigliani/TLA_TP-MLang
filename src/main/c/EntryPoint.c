@@ -1,4 +1,5 @@
 #include "backend/code-generation/Generator.h"
+#include "backend/semantic-validation/Validator.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -19,6 +20,7 @@ const int main(const int count, const char ** arguments) {
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
+	initializeValidatorModule();
 	// initializeGeneratorModule();
 
 	// Logs the arguments of the application.
@@ -47,15 +49,14 @@ const int main(const int count, const char ** arguments) {
 
 		logDebugging(logger, "Validating program semantics...");
 		Program * program = compilerState.abstractSyntaxtTree;
-		// //ComputationResult computationResult = computeExpression(program->expression);
-		// if (computationResult.succeed) {
-		// 	compilerState.value = computationResult.value;
-		// 	generate(&compilerState);
-		// }
-		// else {
-		// 	logError(logger, "The computation phase rejects the input program.");
-		// 	compilationStatus = FAILED;
-		// }
+		boolean isValid = validate(&compilerState);
+		if (isValid) {
+			generate(&compilerState);
+		}
+		else {
+			logError(logger, "The validation phase rejects the input program.");
+			compilationStatus = FAILED;
+		}
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
 		logDebugging(logger, "Releasing AST resources...");
@@ -74,6 +75,7 @@ const int main(const int count, const char ** arguments) {
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();
 	shutdownFlexActionsModule();
+	shutdownValidatorModule();
 	logDebugging(logger, "Compilation is done.");
 	destroyLogger(logger);
 	return compilationStatus;
