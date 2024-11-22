@@ -53,7 +53,7 @@ const int main(const int count, const char ** arguments) {
 		Program * program = compilerState.abstractSyntaxtTree;
 		boolean isValid = validate(&compilerState);
 		if (isValid) {
-			ComputationResult * computationResult = compute(program->simulationWrapper);
+			ComputationResult * computationResult = compute(&compilerState);
 			if (computationResult->success) {
 				compilerState.simulation = computationResult->value;
 				generate(&compilerState);
@@ -61,6 +61,7 @@ const int main(const int count, const char ** arguments) {
 				logError(logger, "The computation phase rejects the input program.");
 				compilationStatus = FAILED;
 			}
+			destroyComputationResult(computationResult);
 		}
 		else {
 			logError(logger, "The validation phase rejects the input program.");
@@ -77,7 +78,7 @@ const int main(const int count, const char ** arguments) {
 	}
 
 	destroySymbolTableManager(compilerState.symbolTables);
-	
+
 	logDebugging(logger, "Releasing modules resources...");
 	// shutdownGeneratorModule();
 	shutdownAbstractSyntaxTreeModule();

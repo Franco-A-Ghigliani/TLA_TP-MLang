@@ -3,6 +3,7 @@
 
 #include "../../shared/CompilerState.h"
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
+#include "../symbol-table/SymbolTableADT.h"
 
 typedef struct NodeComputed {
     unsigned id;
@@ -32,7 +33,6 @@ typedef struct ConnectionComputed {
 
 typedef struct SimulationComputed {
     char * name;
-    unsigned numberOfRuns;
     unsigned timeInterval;
     unsigned timeStepsLimit;
 
@@ -50,6 +50,7 @@ typedef struct ComputationResult {
     struct SimulationComputed * value;
 } ComputationResult;
 
-ComputationResult * compute(SimulationWrapper * simulationWrapper);
+ComputationResult * compute(CompilerState * compilerState);
+void destroyComputationResult(ComputationResult * computationResult);
 
 #endif //COMPUTER_H

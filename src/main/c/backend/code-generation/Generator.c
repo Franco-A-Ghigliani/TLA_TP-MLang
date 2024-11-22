@@ -6,6 +6,7 @@
 /* MODULE INTERNAL STATE */
 
 #define DEFAULT_LAYER 104
+#define DEFAULT_NUMBER_OF_RUNS 10
 
 static Logger* _logger = NULL;
 
@@ -47,7 +48,7 @@ static void _generatePrologue(SimulationComputed* simulation) {
 
     fprintf(csvFile, ",Time Interval:,%u\n", simulation->timeInterval);
     fprintf(csvFile, ",Time Steps Limit:,%u\n", simulation->timeStepsLimit);
-    fprintf(csvFile, ",Number of Runs (total):,%d\n", simulation->numberOfRuns);
+    fprintf(csvFile, ",Number of Runs (total):,%d\n", DEFAULT_NUMBER_OF_RUNS);
     fprintf(csvFile, ",Exporting Codec:,v2.0\n");
     fprintf(csvFile, "\n");
 }
@@ -206,6 +207,16 @@ static void _generateProgram(SimulationComputed* simulation) {
 
     /*
     if (simulation->drains != NULL) {
+        fprintf(csvFile, "DRAINS\n");
+        _generateDrains(simulation->drains);
+        fprintf(csvFile, "\n");
+    }
+    if (simulation->delays != NULL) {
+        fprintf(csvFile, "DRAINS\n");
+        _generateDrains(simulation->drains);
+        fprintf(csvFile, "\n");
+    }
+    if (simulation->endCondition != NULL) {
         fprintf(csvFile, "DRAINS\n");
         _generateDrains(simulation->drains);
         fprintf(csvFile, "\n");
