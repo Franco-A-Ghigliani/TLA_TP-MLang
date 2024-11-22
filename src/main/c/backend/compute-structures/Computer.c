@@ -42,17 +42,9 @@ int _computeExpression(Expression* expression) {
     }
 }
 
-void _computeTemplateInstantiation(TemplateInstance* instance) {}
+NodeComputed * _computeNode(SimulationNode* node);
 
-static void _computeNode(SimulationNode* node) {
-    if (node->isTemplate)
-        return;
-
-    NodeComputed* nodeComputed = malloc(sizeof(NodeComputed));
-    nodeComputed->id = id++;
-    nodeComputed->next = NULL;
-
-    NodeParams* params = node->nodeParams;
+void _setParams(NodeComputed * nodeComputed, NodeParams * params) {
     while (params != NULL) {
         NodeParam* param = params->nodeParam;
         switch (param->type) {
@@ -86,6 +78,26 @@ static void _computeNode(SimulationNode* node) {
         params = params->nextParams;
     }
 
+}
+
+void _computeTemplateInstantiation(TemplateInstance* instance) {
+    struct NodeInstance nodeInstance = getItemByID(symbolTableManager, instance->templateReference)->value.nodeInstance;
+    NodeComputed * newItem = _computeNode(nodeInstance.originalTemplateInTree);
+    _setParams(newItem, instance->nodeParams);
+}
+
+
+//Returns the new created NodeComputed
+NodeComputed * _computeNode(SimulationNode* node) {
+    if (node->isTemplate)
+        return;
+
+    NodeComputed* nodeComputed = malloc(sizeof(NodeComputed));
+    nodeComputed->id = id++;
+    nodeComputed->next = NULL;
+
+    _setParams(nodeComputed, node->nodeParams);
+
     NodeComputed** list = NULL;
     switch (node->type) {
     case SOURCE_TYPE:
@@ -112,6 +124,8 @@ static void _computeNode(SimulationNode* node) {
         nodeComputed->next = *list;
         *list = nodeComputed;
     }
+
+    return nodeComputed;
 }
 
 static void _computeConnection(SimConnection* connection) {}
