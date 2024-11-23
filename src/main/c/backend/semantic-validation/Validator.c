@@ -2,37 +2,6 @@
 
 static boolean _validateExpression(Expression *expression, int *out);
 
-typedef struct NodeAuxStructure
-{
-    NodeType type;
-
-    struct commonParams
-    {
-        char *label;
-        Vector position;
-        Activation activation;
-        ActivationMode activationMode;
-        Color resourcesColor;
-    } commonParams;
-
-    struct poolParams
-    {
-        int initialResources;
-        Color initialResourcesColor;
-        int capacity;
-        int numberDisplayThreshold;
-        boolean drainOnOverflow;
-    } poolParams;
-
-    struct extraParams
-    {
-        boolean converterMulticonversion;
-        boolean delayIsQueue;
-        boolean gateIsRandomDistribution;
-    } extraParams;
-} NodeAuxStructure;
-
-
 /* MODULE INTERNAL STATE */
 const char _indentationCharacter = ' ';
 const char _indentationSize = 4;
