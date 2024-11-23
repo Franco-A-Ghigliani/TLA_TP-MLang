@@ -23,7 +23,7 @@ typedef struct NodeComputed {
 
 typedef struct ConnectionComputed {
     unsigned id;
-    Formula formula;
+    Formula * formula;
     unsigned sourceId;
     unsigned targetId;
 
@@ -41,7 +41,8 @@ typedef struct SimulationComputed {
     struct NodeComputed * converters;
     struct NodeComputed * drains;
 
-    struct ConnectionComputed * connections;
+    struct ConnectionComputed * resourceConnections;
+    struct ConnectionComputed * stateConnections;
 } SimulationComputed;
 
 typedef struct ComputationResult {

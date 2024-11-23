@@ -130,9 +130,9 @@ static char * _expressionToString(Expression * expression) {
     return strdup(buffer);
 }
 
-static char * _formulaToString(Formula formula) {
-    const char *typeString = _formulaTypeToString(formula.type);
-    const char *expressionString = _expressionToString(formula.expression);
+static char * _formulaToString(Formula * formula) {
+    const char *typeString = _formulaTypeToString(formula->type);
+    const char *expressionString = _expressionToString(formula->expression);
 
     char result[64];
     snprintf(result, sizeof(result), "%s%s", typeString, expressionString);
@@ -170,12 +170,20 @@ static void _generateConverters(NodeComputed * converter) {
         _generateConverters(converter->next);
 }
 
-static void _generateConnections(ConnectionComputed * connections) {
-    char * formula = _formulaToString(connections->formula);
-    fprintf(csvFile, "%u,,%u,,,,%s,,%u,%u,interval-based,FALSE,Black,FALSE,,,0\n", connections->id, DEFAULT_LAYER, formula, connections->sourceId, connections->targetId);
+static void _generateResourceConnections(ConnectionComputed * resourceConnections) {
+    char * formula = _formulaToString(resourceConnections->formula);
+    fprintf(csvFile, "%u,,%u,,,,%s,,%u,%u,interval-based,false,Black,false,,,0\n", resourceConnections->id, DEFAULT_LAYER, formula, resourceConnections->sourceId, resourceConnections->targetId);
     free(formula);
-    if (connections->next != NULL)
-        _generateConnections(connections->next);
+    if (resourceConnections->next != NULL)
+        _generateResourceConnections(resourceConnections->next);
+}
+
+static void _generateStateConnections(ConnectionComputed * stateConnections) {
+    char * formula = _formulaToString(stateConnections->formula);
+    fprintf(csvFile, "%u,,%u,,,,%s,%u,%u,false,Black,receiving resource,0\n", stateConnections->id, DEFAULT_LAYER, formula, stateConnections->sourceId, stateConnections->targetId);
+    free(formula);
+    if (stateConnections->next != NULL)
+        _generateStateConnections(stateConnections->next);
 }
 
 /**
@@ -229,10 +237,16 @@ static void _generateProgram(SimulationComputed* simulation) {
         _generateConverters(simulation->converters);
         fprintf(csvFile, "\n");
     }
-    if (simulation->connections != NULL) {
+    if (simulation->resourceConnections != NULL) {
         fprintf(csvFile, "RESOURCE CONNECTIONS\n");
         fprintf(csvFile, "ID,Label,Layer ID,Group ID,Geometry,Style,Formula,Interval,Source,Target,Transfer,Color Coding,Color Coding (color),Shuffle Source,Limits (minimum),Limits (maximum),Position\n");
-        _generateConnections(simulation->connections);
+        _generateResourceConnections(simulation->resourceConnections);
+        fprintf(csvFile, "\n");
+    }
+    if (simulation->stateConnections != NULL) {
+        fprintf(csvFile, "STATE CONNECTIONS\n");
+        fprintf(csvFile, "ID,Label,Layer ID,Group ID,Geometry,Style,Formula,Source,Target,Color Coding,Color Coding (color),Trigger on,Position\n");
+        _generateStateConnections(simulation->stateConnections);
         fprintf(csvFile, "\n");
     }
 }

@@ -5,7 +5,7 @@ KHASH_MAP_INIT_STR(str_int, int)
 
 static ComputationResult* computationResult;
 static SymbolTableManagerADT symbolTableManager;
-khash_t(str_int) * hashMap;
+khash_t(str_int)* hashMap;
 khiter_t hashMapIter;
 
 static int id = 100;
@@ -48,9 +48,9 @@ int _computeExpression(Expression* expression) {
     }
 }
 
-NodeComputed * _computeNode(SimulationNode* node);
+NodeComputed* _computeNode(SimulationNode* node);
 
-void _setParams(NodeComputed * nodeComputed, NodeParams * params) {
+void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
     while (params != NULL) {
         NodeParam* param = params->nodeParam;
         switch (param->type) {
@@ -83,21 +83,17 @@ void _setParams(NodeComputed * nodeComputed, NodeParams * params) {
         }
         params = params->nextParams;
     }
-
 }
 
 void _computeTemplateInstantiation(TemplateInstance* instance) {
     struct NodeInstance nodeInstance = getItemByID(symbolTableManager, instance->templateReference)->value.nodeInstance;
-    NodeComputed * newItem = _computeNode(nodeInstance.originalTemplateInTree);
+    NodeComputed* newItem = _computeNode(nodeInstance.originalTemplateInTree);
     _setParams(newItem, instance->nodeParams);
 }
 
 
 //Returns the new created NodeComputed
-NodeComputed * _computeNode(SimulationNode* node) {
-    if (node->isTemplate)
-        return;
-
+NodeComputed* _computeNode(SimulationNode* node) {
     NodeComputed* nodeComputed = malloc(sizeof(NodeComputed));
     nodeComputed->id = id;
     int ret;
@@ -134,21 +130,21 @@ NodeComputed * _computeNode(SimulationNode* node) {
     return nodeComputed;
 }
 
-static void _computeConnection(SimConnection * connection) {
-    ConnectionComputed * connectionComputed = malloc(sizeof(ConnectionComputed));
+static void _computeConnection(SimConnection* connection) {
+    ConnectionComputed* connectionComputed = malloc(sizeof(ConnectionComputed));
     connectionComputed->id = id++;
 
     int sourceId = 0;
     int targetId = 0;
 
-    NodeReference * from = connection->from;
+    NodeReference* from = connection->from;
     while (from->next != NULL)
         from = from->next;
     hashMapIter = kh_get(str_int, hashMap, from->reference);
     if (hashMapIter != kh_end(hashMap))
         sourceId = kh_value(hashMap, hashMapIter);
 
-    NodeReference * to = connection->to;
+    NodeReference* to = connection->to;
     while (to->next != NULL)
         to = to->next;
     hashMapIter = kh_get(str_int, hashMap, to->reference);
@@ -157,11 +153,19 @@ static void _computeConnection(SimConnection * connection) {
 
     connectionComputed->sourceId = sourceId;
     connectionComputed->targetId = targetId;
+    connectionComputed->formula = connection->formula;
 
-    connectionComputed->next = computationResult->value->connections;
-    computationResult->value->connections = connectionComputed;
+    ConnectionComputed** list = NULL;
+    switch (connection->type) {
+    case RESOURCE:
+        list = &computationResult->value->resourceConnections;
+        break;
+    case STATE:
+        list = &computationResult->value->stateConnections;
+    }
 
-
+    connectionComputed->next = *list;
+    *list = connectionComputed;
 }
 
 static void _computeSimElements(SimElements* elements) {
