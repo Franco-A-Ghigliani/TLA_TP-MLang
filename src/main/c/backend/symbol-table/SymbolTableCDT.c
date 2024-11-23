@@ -115,7 +115,7 @@ SymbolTableItem* getItemByID(const SymbolTableManagerADT manager, const char* id
 void freeSymbolTableItem(SymbolTableItem* item){
     switch (item->type)
     {
-        case STRING:
+        case STRING_VALUE:
             if(item->value.stringValue != NULL){
                 free(item->value.stringValue);
                 item->value.stringValue = NULL;

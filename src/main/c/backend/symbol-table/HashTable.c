@@ -4,7 +4,6 @@
 #define INITIAL_TABLE_SIZE 100
 #define LOAD_THRESHOLD 0.75f
 
-static void freeListTable(PairList *table, unsigned long size);
 
 typedef struct Pair {
     char *key;
@@ -22,6 +21,8 @@ typedef struct HashTable {
     unsigned long slotsOccupied;
     PairList *table;
 } HashTable;
+
+static void freeListTable(PairList *table, unsigned long size);
 
 static unsigned long hash(const unsigned char *str)
 {

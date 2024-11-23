@@ -7,8 +7,8 @@ typedef struct SymbolTable* SymbolTableADT;
 
 typedef enum
 {
-    INT,
-    STRING,
+    INT_VALUE,
+    STRING_VALUE,
     NODE,
     NODE_TEMPLATE,
     NODE_TEMPLATE_INSTANCE,
@@ -17,14 +17,6 @@ typedef enum
     BOTTOM
 } SymbolTableValueType;
 
-typedef union SymbolTableValue SymbolTableValue;    
-
-typedef struct SymbolTableItem
-{
-    char *id;
-    SymbolTableValueType type;
-    SymbolTableValue value;
-} SymbolTableItem;
 
 typedef struct SimulationTemplateSymbol
 {
@@ -47,6 +39,14 @@ typedef union SymbolTableValue
     SimulationTemplateSymbol simulationTemplate;
     SimulationTemplateSymbol *simulationTemplateInstanceParent;
 } SymbolTableValue;
+
+typedef struct SymbolTableItem
+{
+    char *id;
+    SymbolTableValueType type;
+    SymbolTableValue value;
+} SymbolTableItem;
+
 
 void exitCurrentScope(SymbolTableManagerADT manager);
 SymbolTableADT getActiveScope(const SymbolTableManagerADT manager);

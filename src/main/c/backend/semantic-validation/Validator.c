@@ -35,7 +35,7 @@ static boolean _validateFactor(Factor *factor, int *out){
                 logError(_logger, "Symbol does not exist or is not accesible from current scope");
                 return false;
             }
-            if(item->type != INT){
+            if(item->type != INT_VALUE){
                 logError(_logger, "Invalid type. Expected int");
                 return false;
             }
@@ -70,8 +70,8 @@ static boolean _validateExpression(Expression *expression, int *out){
     boolean isValid = true;
     switch (expression->type)
     {
+        int aux;
         case ADDITION:
-            int aux;
             isValid = _validateExpression(expression->leftExpression, out);
             if(!isValid)
                 break;
@@ -81,7 +81,6 @@ static boolean _validateExpression(Expression *expression, int *out){
             *out += aux; 
             break;
         case SUBSTRACTION:
-            int aux;
             isValid = _validateExpression(expression->leftExpression, out);
             if(!isValid)
                 break;
@@ -91,7 +90,6 @@ static boolean _validateExpression(Expression *expression, int *out){
             *out -= aux; 
             break;
         case MULTIPLICATION:
-            int aux;
             isValid = _validateExpression(expression->leftExpression, out);
             if(!isValid)
                 break;
@@ -101,7 +99,6 @@ static boolean _validateExpression(Expression *expression, int *out){
             *out *= aux;
             break;
         case DIVISION:
-            int aux;
             isValid = _validateExpression(expression->leftExpression, out);
             if(!isValid)
                 break;
@@ -226,6 +223,8 @@ static boolean _validateNodeParams(NodeParams *params, NodeType type){
     {
         switch (current->nodeParam->type)
         {
+            int aux;
+
             case NODE_ACTIVATION_TYPE:
                 if(type == END_CONDITION_TYPE)
                 {
@@ -253,7 +252,6 @@ static boolean _validateNodeParams(NodeParams *params, NodeType type){
                     logError(_logger, "InitalResources is not valid in this node");
                     return false;
                 }
-                int aux;
                 if(!_validateExpression (current->nodeParam->expression, &aux)){
                     return false;
                 }
@@ -275,7 +273,6 @@ static boolean _validateNodeParams(NodeParams *params, NodeType type){
                     logError(_logger, "Capacity is not valid in this node");
                     return false;
                 }
-                int aux;
                 if(!_validateExpression (current->nodeParam->expression, &aux)){
                     return false;
                 }
@@ -285,7 +282,6 @@ static boolean _validateNodeParams(NodeParams *params, NodeType type){
                     logError(_logger, "NumberDisplayThreshold is not valid in this node");
                     return false;
                 }
-                int aux;
                 if(!_validateExpression (current->nodeParam->expression, &aux)){
                     return false;
                 }
@@ -448,6 +444,7 @@ static boolean _validateSimulationParams(SimulationParams *params){
                 break;
         }
     }
+    return foundInterval && foundName && foundSteps;
 }
 
 static boolean _validateSimulation(Simulation* simulation){
@@ -487,12 +484,12 @@ static boolean _validateConstant(Constant *constant){
     newItem->id = constant->constantName;
 
     if(constant->type == VALUE_EXPRESSION){
-        newItem->type = INT;
+        newItem->type = INT_VALUE;
         if(_validateExpression(constant->expression, &(newItem->value.intValue)) == false){
             return false;
         }
     } else if (constant->type == VALUE_STRING){
-        newItem->type = STRING;
+        newItem->type = STRING_VALUE;
         if(constant->string == NULL){
             logError(_logger, "NULL string pointer");
             return false;

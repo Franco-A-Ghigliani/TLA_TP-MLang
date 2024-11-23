@@ -132,7 +132,7 @@ static char * _expressionToString(Expression * expression) {
 
 static char * _formulaToString(Formula * formula) {
     const char *typeString = _formulaTypeToString(formula->type);
-    const char *expressionString = _expressionToString(formula->expression);
+    char *expressionString = _expressionToString(formula->expression);
 
     char result[64];
     snprintf(result, sizeof(result), "%s%s", typeString, expressionString);

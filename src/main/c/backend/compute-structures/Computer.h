@@ -1,7 +1,6 @@
 #ifndef COMPUTER_H
 #define COMPUTER_H
 
-#include "../../shared/CompilerState.h"
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "../symbol-table/SymbolTableADT.h"
 
@@ -50,7 +49,9 @@ typedef struct ComputationResult {
     struct SimulationComputed * value;
 } ComputationResult;
 
-ComputationResult * compute(CompilerState * compilerState);
+struct CompilerState;
+
+ComputationResult* compute(Program* program, SymbolTableManagerADT symbolTableManagerAdt);
 void destroyComputationResult(ComputationResult * computationResult);
 
 #endif //COMPUTER_H

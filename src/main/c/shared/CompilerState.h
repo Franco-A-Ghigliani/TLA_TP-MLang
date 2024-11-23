@@ -5,7 +5,6 @@
 #include "../backend/symbol-table/SymbolTableADT.h"
 #include "../backend/compute-structures/Computer.h"
 
-
 /**
  * The general status of a compilation.
 */

@@ -53,7 +53,7 @@ const int main(const int count, const char ** arguments) {
 		Program * program = compilerState.abstractSyntaxtTree;
 		boolean isValid = validate(&compilerState);
 		if (isValid) {
-			ComputationResult * computationResult = compute(&compilerState);
+			ComputationResult * computationResult = compute(program, compilerState.symbolTables);
 			if (computationResult->success) {
 				compilerState.simulation = computationResult->value;
 				generate(&compilerState);

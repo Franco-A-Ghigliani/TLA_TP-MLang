@@ -3,6 +3,7 @@
 
 KHASH_MAP_INIT_STR(str_int, int)
 
+
 static ComputationResult* computationResult;
 static SymbolTableManagerADT symbolTableManager;
 khash_t(str_int)* hashMap;
@@ -16,7 +17,7 @@ int _computeExpression(Expression* expression);
 int _computeFactor(Factor* factor) {
     switch (factor->type) {
     case FACTOR_STRING:
-        return getItemByID(symbolTableManager, factor->id)->value.intValue;
+        return getItemByID(symbolTableManager, factor->id, true)->value.intValue;
     case INTEGER_TYPE:
         return factor->value;
     case EXPRESSION:
@@ -86,7 +87,7 @@ void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
 }
 
 void _computeTemplateInstantiation(TemplateInstance* instance) {
-    struct NodeInstance nodeInstance = getItemByID(symbolTableManager, instance->templateReference)->value.nodeInstance;
+    struct NodeInstance nodeInstance = getItemByID(symbolTableManager, instance->templateReference, true)->value.nodeInstance;
     NodeComputed* newItem = _computeNode(nodeInstance.originalTemplateInTree);
     _setParams(newItem, instance->nodeParams);
 }
@@ -228,7 +229,7 @@ static void _destroyConnectionComputedList(struct ConnectionComputed* head) {
 }
 
 //------------------------Public Functions-----------------------
-ComputationResult* compute(CompilerState* compilerState) {
+ComputationResult* compute(Program* program, SymbolTableManagerADT symbolTableManagerAdt) {
     ComputationResult* computed = malloc(sizeof(ComputationResult));
     SimulationComputed* simComputed = malloc(sizeof(SimulationComputed));
 
@@ -236,10 +237,10 @@ ComputationResult* compute(CompilerState* compilerState) {
     computed->value = simComputed;
 
     computationResult = computed;
-    symbolTableManager = compilerState->symbolTables;
+    symbolTableManager = symbolTableManagerAdt;
     hashMap = kh_init(str_int);
 
-    _computeSimulationWrapper(((Program*)compilerState->abstractSyntaxtTree)->simulationWrapper);
+    _computeSimulationWrapper(program->simulationWrapper);
 
     return computationResult;
 }
@@ -251,7 +252,8 @@ void destroyComputationResult(ComputationResult* computationResult) {
     _destroyNodeComputedList(computationResult->value->converters);
     _destroyNodeComputedList(computationResult->value->drains);
 
-    _destroyConnectionComputedList(computationResult->value->connections);
+    _destroyConnectionComputedList(computationResult->value->resourceConnections);
+    _destroyConnectionComputedList(computationResult->value->stateConnections);
 
     free(computationResult->value);
     free(computationResult);
