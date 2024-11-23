@@ -1,0 +1,21 @@
+Simulation () {
+    Pool storage {
+        label="Pool";
+        activation = passive;
+        activationMode = pullAny;
+        initialResources = 0;
+        initialResourcesColor = Red;
+        capacity = -1;
+        numberDisplayThreshold = 0;
+        drainOnOverflow = false;
+    }
+
+    Converter converter {
+		label="Converter";
+		activation=automatic;
+		resourceColor=Red;
+		multipleConversion=single;
+    }
+
+    converter => storage {1};
+}

@@ -1,0 +1,12 @@
+Simulation (name="Test simulation", stepInterval=1, stepsToSimulate=100) {
+	Pool testPool {
+		label="Pool de testeo";
+		activation=automatic;
+		activationMode=pullAny;
+		initialResources=10;
+		initialResourcesColor=Black;
+		capacity=-1;
+		numberDisplayThreshold=0;
+		drainOnOverflow=true;
+	}
+}

@@ -1,0 +1,21 @@
+Simulation (){
+    Source regen {
+        label = "Regeneration";
+        activation = automatic;
+        resourceColor=Red;
+    }
+
+    Pool hp {
+        label = "HP";
+        activation = passive;
+        activationMode = pushAny;
+        initialResources = 100;
+        initialResourcesColor = Red;
+        capacity = 100;
+        numberDisplayThreshold = -1;
+        drainOnOverflow = false;
+    }
+
+    hp =# regen {<5};
+}
+
