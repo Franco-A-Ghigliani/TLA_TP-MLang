@@ -96,7 +96,7 @@ void addItem(SymbolTableADT table, SymbolTableItem* item){
     }
 }
 
-SymbolTableItem* getItemByID(const SymbolTableManagerADT manager, const char* id){
+SymbolTableItem* getItemByID(const SymbolTableManagerADT manager, const char* id, boolean recursive){
     SymbolTableADT currentTable = manager->activeTable;
     while (currentTable != NULL)
     {
@@ -104,6 +104,9 @@ SymbolTableItem* getItemByID(const SymbolTableManagerADT manager, const char* id
         if(item != NULL){
             return item;
         }
+        if(!recursive)
+            break;
+            
         currentTable = currentTable->lastActiveTable;
     }
     return NULL;
