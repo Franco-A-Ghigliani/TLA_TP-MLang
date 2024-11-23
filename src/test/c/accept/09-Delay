@@ -1,0 +1,7 @@
+Simulation (name="Test simulation", stepInterval=1, stepsToSimulate=100) {
+	Delay testDelay {
+		label="Delay de testeo";
+		activation=automatic;
+		isQueue=true;
+	}
+}

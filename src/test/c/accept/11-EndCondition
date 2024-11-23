@@ -1,0 +1,5 @@
+Simulation (name="Test simulation", stepInterval=1, stepsToSimulate=100) {
+	EndCondition testEndCondition {
+		label="EndCondition de testeo";
+	}
+}

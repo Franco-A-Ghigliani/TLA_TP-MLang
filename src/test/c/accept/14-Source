@@ -1,0 +1,7 @@
+Simulation (name="Test simulation", stepInterval=1, stepsToSimulate=100) {
+    Source testSource {
+        label="Test source";
+        activation = automatic;
+        resourceColor=Red;
+    }
+}

@@ -1,0 +1,7 @@
+Simulation (name="Test simulation", stepInterval=1, stepsToSimulate=100) {
+	Drain testDrain {
+		label="Drain de testeo";
+		activation=automatic;
+		activationMode=pullAny;
+	}
+}

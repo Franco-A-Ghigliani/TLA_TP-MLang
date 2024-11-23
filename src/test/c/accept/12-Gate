@@ -1,0 +1,8 @@
+Simulation (name="Test simulation", stepInterval=1, stepsToSimulate=100) {
+	Gate testGate {
+		label="Gate de testeo";
+		activation=automatic;
+		activationMode=pullAny;
+        randomDistribution=true;
+	}
+}
