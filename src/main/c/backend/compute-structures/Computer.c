@@ -174,12 +174,14 @@ static void _computeSimElements(SimElements* elements) {
     case CONNECTION:
         _computeConnection(elements->connection);
         break;
-    case NODE:
+    case NODE_TYPE:
         _computeNode(elements->node);
         break;
     case TEMPLATE_INSTANCIATION:
         _computeTemplateInstantiation(elements->templateInst);
     }
+    if (elements->next != NULL)
+        _computeSimElements(elements->next);
 }
 
 static void _computeSimParams(SimulationParams* params) {
