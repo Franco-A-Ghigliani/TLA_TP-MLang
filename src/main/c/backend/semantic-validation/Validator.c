@@ -2,6 +2,37 @@
 
 static boolean _validateExpression(Expression *expression, int *out);
 
+typedef struct NodeAuxStructure
+{
+    NodeType type;
+
+    struct commonParams
+    {
+        char *label;
+        Vector position;
+        Activation activation;
+        ActivationMode activationMode;
+        Color resourcesColor;
+    } commonParams;
+
+    struct poolParams
+    {
+        int initialResources;
+        Color initialResourcesColor;
+        int capacity;
+        int numberDisplayThreshold;
+        boolean drainOnOverflow;
+    } poolParams;
+
+    struct extraParams
+    {
+        boolean converterMulticonversion;
+        boolean delayIsQueue;
+        boolean gateIsRandomDistribution;
+    } extraParams;
+} NodeAuxStructure;
+
+
 /* MODULE INTERNAL STATE */
 const char _indentationCharacter = ' ';
 const char _indentationSize = 4;
@@ -30,13 +61,13 @@ static boolean _validateFactor(Factor *factor, int *out){
     switch (factor->type)
     {
         case FACTOR_STRING:
-            SymbolTableItem *item = getItemByID(_manager, factor->id);
+            SymbolTableItem *item = getItemByID(_manager, factor->id, true);
             if(item == NULL){
-                logError(_logger, "Symbol does not exists or is not accesible from current scope");
+                logError(_logger, "Symbol does not exist or is not accesible from current scope");
                 return false;
             }
             if(item->type != INT){
-                logError(_logger, "Expected an int but got another data type");
+                logError(_logger, "Invalid type. Expected int");
                 return false;
             }
             *out = item->value.intValue;
@@ -109,7 +140,7 @@ static boolean _validateExpression(Expression *expression, int *out){
             if(!isValid)
                 break;
             if(aux == 0){
-                logError(_logger, "zero division detected in expression");
+                logError(_logger, "Zero division detected in expression");
                 isValid = false;
                 break;
             }
@@ -126,46 +157,6 @@ static boolean _validateExpression(Expression *expression, int *out){
 }
 #pragma endregion
 
-/**Constant validation */
-static boolean _validateConstant(Constant *constant){
-    if(constant == NULL){
-        logError(_logger, "NULL constant");
-        return false;
-    }
-
-    SymbolTableItem *newItem = calloc(1, sizeof(SymbolTableItem));
-
-    if(newItem == NULL){
-        logError(_logger, "Error allocating table item");
-        return false;
-    }
-
-    if(constant->constantName == NULL){
-        logError(_logger, "NULL constant name");
-        return false;
-    }
-    newItem->id = constant->constantName;
-
-    if(constant->type == VALUE_EXPRESSION){
-        newItem->type = INT;
-        if(_validateExpression(constant->expression, &(newItem->value.intValue)) == false){
-            return false;
-        }
-    } else if (constant->type == VALUE_STRING){
-        newItem->type = STRING;
-        if(constant->string == NULL){
-            logError(_logger, "NULL string pointer");
-            return false;
-        }
-        newItem->value.stringValue = constant->string;
-    } else {
-        logError(_logger, "Invalid constant type");
-        return false;
-    }
-    addItem(getActiveScope(_manager), newItem);
-    return true;
-}
-
 /**Simulation elements validation */
 #pragma region ElementValidation
 
@@ -178,9 +169,9 @@ static SimulationNode *_getNodeReferenceItem(NodeReference *start){
         return NULL;
     }
 
-    SymbolTableItem *item = getItemByID(_manager, currentRef->reference);
+    SymbolTableItem *item = getItemByID(_manager, currentRef->reference, true);
     if(item == NULL){
-        logError(_logger, "Symbol does not exists or is not accesible from current scope");
+        logError(_logger, "Symbol does not exist or is not accesible from current scope");
         return NULL;
     }
 
@@ -196,9 +187,9 @@ static SimulationNode *_getNodeReferenceItem(NodeReference *start){
             return NULL;
         }
 
-        item = getItemByID(_manager, currentRef->reference);
+        item = getItemByID(_manager, currentRef->reference, false);
         if(item == NULL){
-            logError(_logger, "Symbol does not exists or is not accesible from current scope");
+            logError(_logger, "Symbol does not exist or is not accesible from current scope");
             return NULL;
         }
     }
@@ -213,7 +204,7 @@ static SimulationNode *_getNodeReferenceItem(NodeReference *start){
     } else if(item->type == NODE_TEMPLATE_INSTANCE) {
         return item->value.nodeInstance.originalTemplateInTree;
     }else {
-        logError(_logger, "Invalid type. Expected Node or NodeTemplateInstance");
+        logError(_logger, "Invalid type. Expected Node or instance of Template:Node");
         return NULL;
     }
 }
@@ -260,11 +251,167 @@ static boolean _validateConnection(SimConnection *connection){
 }
 #pragma endregion
 
-static boolean _validateNode(SimulationNode *node){
+static boolean _validateNodeParams(NodeParams *params, NodeType type){
+    NodeParams *current = params;
+    while (current != NULL)
+    {
+        switch (current->nodeParam->type)
+        {
+            case NODE_ACTIVATION_TYPE:
+                if(type == END_CONDITION_TYPE)
+                {
+                    logError(_logger, "Activation is not valid in EndCondition nodes");
+                    return false;
+                }
+                break;
+            case NODE_ACTIVATION_MODE_TYPE:
+                if(type == CONVERTER_TYPE || type == DELAY_TYPE || type == END_CONDITION_TYPE){
+                    logError(_logger, "ActivationMode is not valid in this node");
+                    return false;
+                }
+                if(type == SOURCE_TYPE && (current->nodeParam->activationMode == PULL_ALL || current->nodeParam->activationMode == PULL_ALL)){
+                    logError(_logger, "Pull behaviours are not valid in Source nodes");
+                    return false;
+                }
+                if((type == DRAIN_TYPE || type == GATE_TYPE) 
+                && (current->nodeParam->activationMode == PUSH_ALL || current->nodeParam->activationMode == PUSH_ANY)){
+                    logError(_logger, "Push behaviours are not valid in this node");
+                    return false;
+                }
+                break;
+            case POOL_INITIAL_RESOURCES_TYPE:
+                if(type != POOL_TYPE){
+                    logError(_logger, "InitalResources is not valid in this node");
+                    return false;
+                }
+                int aux;
+                if(!_validateExpression (current->nodeParam->expression, &aux)){
+                    return false;
+                }
+                break;
+            case NODE_RESOURCE_COLOR_TYPE:
+                if(type != SOURCE_TYPE && type != CONVERTER_TYPE){
+                    logError(_logger, "ResourceColor is not valid in this node");
+                    return false;
+                }
+                break;
+            case POOL_INITIAL_RESOURCES_COLOR_TYPE:
+                if(type != POOL_TYPE){
+                    logError(_logger, "InitalResourcesColor is not valid in this node");
+                    return false;
+                }
+                break;
+            case POOL_CAPACITY_TYPE:
+                if(type != POOL_TYPE){
+                    logError(_logger, "Capacity is not valid in this node");
+                    return false;
+                }
+                int aux;
+                if(!_validateExpression (current->nodeParam->expression, &aux)){
+                    return false;
+                }
+                break;
+            case POOL_NUMBER_DISPLAY_THRESHOLD_TYPE:
+                if(type != POOL_TYPE){
+                    logError(_logger, "NumberDisplayThreshold is not valid in this node");
+                    return false;
+                }
+                int aux;
+                if(!_validateExpression (current->nodeParam->expression, &aux)){
+                    return false;
+                }
+                break;
+            case GATE_RANDOM_DISTRIBUTION_TYPE:
+                if(type != GATE_TYPE){
+                    logError(_logger, "RandomDistribution is not valid in this node");
+                    return false;
+                }
+                break;
+            case POOL_DRAIN_ON_OVERFLOW_TYPE:
+                if(type != POOL_TYPE){
+                    logError(_logger, "DrainOnOverflow is not valid in this node");
+                    return false;
+                }
+                break;
+            case CONVERTER_MULTICONVERSION_TYPE:
+                if(type != CONVERTER_TYPE){
+                    logError(_logger, "Multiconversion is not valid in this node");
+                    return false;
+                }
+                break;
+            case DELAY_QUEUE_TYPE:
+                if(type != DRAIN_TYPE){
+                    logError(_logger, "Queue is not valid in this node");
+                    return false;
+                }
+                break;
+            default:
+                break;
+        }
+        current = current->nextParams;
+    }
     
+    return true;
+}
+
+static boolean _validateNode(SimulationNode *node){
+    if(node == NULL){
+        logError(_logger, "NULL node");
+        return false;
+    }
+    
+    if(!_validateNodeParams(node->nodeParams, node->type)){
+        logError(_logger, "Invalid node parameters");
+        return false;
+    }
+    
+    SymbolTableItem *newItem = calloc(1, sizeof(SymbolTableItem));
+    newItem->type = node->isTemplate? NODE_TEMPLATE : NODE;
+    newItem->id = node->id;
+    newItem->value.nodeInTree = node;
+    
+    addItem(getActiveScope(_manager), newItem);
+    return true;
 }
 
 static boolean _validateInstance(TemplateInstance *instance){
+    if(instance == NULL){
+        logError(_logger, "NULL instance");
+        return false;
+    }
+
+    if(getItemByID(_manager, instance->name, true) != NULL){
+        logError(_logger, "Symbol already existant in this scope");
+        return false;
+    }
+
+    SymbolTableItem *refItem = getItemByID(_manager, instance->templateReference, true);
+    if(refItem == NULL){
+        logError(_logger, "Symbol does not exist or is not accesible from current scope");
+        return false;
+    }
+
+    if(refItem->type == NODE_TEMPLATE){
+        boolean isValid = _validateNodeParams(instance->nodeParams, refItem->value.nodeInTree->type);
+        if(isValid){
+            SymbolTableItem *newItem = calloc(1, sizeof(SymbolTableItem));
+            newItem->id = instance->name;
+            newItem->type = NODE_TEMPLATE_INSTANCE;
+            newItem->value.nodeInstance.instanceOverridesinTree = instance->nodeParams;
+            newItem->value.nodeInstance.originalTemplateInTree = refItem->value.nodeInTree;
+            addItem(getActiveScope(_manager), newItem);
+        }
+        return isValid;
+    } else if(refItem->type != SIM_TEMPLATE){
+        logError(_logger, "Invalid type. Expected Template:Node or Template:Simulation");
+        return false;
+    }
+
+    SymbolTableItem *newItem = calloc(1, sizeof(SymbolTableItem));
+    newItem->id = instance->name;
+    newItem->type = SIM_TEMPLATE_INSTANCE;
+    newItem->value.simulationTemplateInstanceParent = &(refItem->value.simulationTemplate);
+    addItem(getActiveScope(_manager), newItem);
 
 }
 
@@ -302,17 +449,113 @@ static boolean _validateSimulationElements(SimElements *elements){
 }
 #pragma endregion
 
-
-static boolean _validateSimTemplate(SimulationTemplate* template){
-    return _validateSimulationElements(template->simElements);
+#pragma region SimulationValidation
+static boolean _validateSimulationParams(SimulationParams *params){
+    boolean foundName = false, foundSteps = false, foundInterval = false;
+    for (size_t i = 0; i < 3; i++)
+    {
+        switch (params->params[i]->type)
+        {
+            case NAME_PARAM:
+                if(foundName){
+                    logError(_logger, "Repeated simulation parameter");
+                    return false;
+                }
+                foundName = true;
+                break;
+            case STEP_INTERVAL_PARAM:
+                if(foundInterval){
+                    logError(_logger, "Repeated simulation parameter");
+                    return false;
+                }
+                foundInterval = true;
+                break;
+            case STEPS_PARAM:
+                if(foundSteps){
+                    logError(_logger, "Repeated simulation parameter");
+                    return false;
+                }
+                foundSteps = true;
+                break;
+        }
+    }
 }
 
 static boolean _validateSimulation(Simulation* simulation){
+    if(simulation == NULL){
+        logError(_logger, "NULL Simulation");
+        return false;
+    }
 
+    if(!_validateSimulationParams(simulation->params)){
+        logError(_logger, "Invalid simulation parameters");
+        return false;
+    }
+
+    return _validateSimulationElements(simulation->simElements);
 }
-
+#pragma endregion
 
 #pragma region ProgramValidation
+
+static boolean _validateConstant(Constant *constant){
+    if(constant == NULL){
+        logError(_logger, "NULL constant");
+        return false;
+    }
+
+    SymbolTableItem *newItem = calloc(1, sizeof(SymbolTableItem));
+
+    if(newItem == NULL){
+        logError(_logger, "Error allocating table item");
+        return false;
+    }
+
+    if(constant->constantName == NULL){
+        logError(_logger, "NULL constant name");
+        return false;
+    }
+    newItem->id = constant->constantName;
+
+    if(constant->type == VALUE_EXPRESSION){
+        newItem->type = INT;
+        if(_validateExpression(constant->expression, &(newItem->value.intValue)) == false){
+            return false;
+        }
+    } else if (constant->type == VALUE_STRING){
+        newItem->type = STRING;
+        if(constant->string == NULL){
+            logError(_logger, "NULL string pointer");
+            return false;
+        }
+        newItem->value.stringValue = constant->string;
+    } else {
+        logError(_logger, "Invalid constant type");
+        return false;
+    }
+    addItem(getActiveScope(_manager), newItem);
+    return true;
+}
+
+static boolean _validateSimTemplate(SimulationTemplate* template){
+    if(template == NULL){
+        logError(_logger, "NULL Template:Simulation");
+        return false;
+    }
+    SymbolTableADT newTable = createSymbolTable();
+
+    SymbolTableItem *newItem = calloc(1, sizeof(SymbolTableItem));
+    newItem->type = SIM_TEMPLATE;
+    newItem->id = template->name;
+    newItem->value.simulationTemplate.internalSymbolTable = newTable;
+    addItem(getActiveScope(_manager), newItem);
+
+    setNewActiveScope(_manager, newTable);
+    boolean valid = _validateSimulationElements(template->simElements);
+    exitCurrentScope(_manager);
+    return valid;
+}
+
 static boolean _validateSimWrappers(SimulationWrapper* simWrapper){
     if(simWrapper == NULL){
         return true;

@@ -41,7 +41,7 @@ typedef union SymbolTableValue
     struct NodeInstance
     {
         SimulationNode *originalTemplateInTree;
-        SimulationNode *instanceinTree;
+        NodeParams *instanceOverridesinTree;
     } nodeInstance;
 
     SimulationTemplateSymbol simulationTemplate;
@@ -62,6 +62,6 @@ void destroySymbolTable(SymbolTableADT table);
 
 // Functions for reading information from the SymbolTable
 void addItem(SymbolTableADT table, SymbolTableItem* item);
-SymbolTableItem* getItemByID(const SymbolTableManagerADT table, const char* id);
+SymbolTableItem* getItemByID(const SymbolTableManagerADT table, const char* id, boolean recursive);
 void freeSymbolTableItem(SymbolTableItem* item);
 #endif
