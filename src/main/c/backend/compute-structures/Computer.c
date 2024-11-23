@@ -136,7 +136,7 @@ static NodeComputed* _computeNode(SimulationNode* node) {
         kh_value(hashMap, hashMapIter) = id++;
 
     //Set defaults
-    nodeComputed->name="Unnamed";
+    nodeComputed->name="";
     nodeComputed->initialResources=0;
     nodeComputed->capacityLimit=-1;
     nodeComputed->capacityDisplay=0;
