@@ -5,7 +5,7 @@
 #include "../symbol-table/SymbolTableADT.h"
 /* MODULE INTERNAL STATE */
 
-#define DEFAULT_LAYER 104
+#define DEFAULT_LAYER 80
 #define DEFAULT_NUMBER_OF_RUNS 10
 
 static Logger* _logger = NULL;
@@ -58,14 +58,14 @@ static void _generateEpilogue() {
     logDebugging(_logger, "Generating epilogue");
     fprintf(csvFile, "LAYERS\n");
     fprintf(csvFile, "ID,Label,Parent Layer ID,Visible,Locked\n");
-    //fprintf(csvFile, "103,,,true,false\n");
-    fprintf(csvFile, "%d,,,true,false\n", DEFAULT_LAYER);
+    fprintf(csvFile, "%d,,,true,false\n", DEFAULT_LAYER-1);
+    fprintf(csvFile, "%d,,%d,true,false\n", DEFAULT_LAYER, DEFAULT_LAYER-1);
     fprintf(csvFile,"\n");
 }
 
 static char * _vectorToString(int x, int y) {
     char auxBuffer[100];
-    snprintf(auxBuffer, sizeof(auxBuffer), "{\"x\":%d,\"y\":%d,\"width\":46,\"height\":46}", x, y);
+    snprintf(auxBuffer, sizeof(auxBuffer), "\"{\"\"x\"\":%d,\"\"y\"\":%d,\"\"width\"\":46,\"\"height\"\":46}\"", x, y);
     return strdup(auxBuffer);
 }
 
@@ -172,10 +172,10 @@ static void _generatePools(NodeComputed* pool) {
         _generatePools(pool->next);
 }
 
-static void _generateGates(NodeComputed* gates) {
-    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%s,0\n", gates->id, gates->name, DEFAULT_LAYER, _vectorToString(gates->positionX, gates->positionY),_activationToString(gates->activation),_activationModeToString(gates->activationMode), _distributionToString(gates->distribution));
-    if (gates->next != NULL)
-        _generateGates(gates->next);
+static void _generateGates(NodeComputed* gate) {
+    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%s,0\n", gate->id, gate->name, DEFAULT_LAYER, _vectorToString(gate->positionX, gate->positionY),_activationToString(gate->activation),_activationModeToString(gate->activationMode), _distributionToString(gate->distribution));
+    if (gate->next != NULL)
+        _generateGates(gate->next);
 }
 
 static void _generateConverters(NodeComputed * converter) {
@@ -185,7 +185,7 @@ static void _generateConverters(NodeComputed * converter) {
 }
 
 static void _generateDrains(NodeComputed * drain) {
-    fprintf(csvFile, "%u,,%u,,%s,,%s,%s,0\n", drain->id, DEFAULT_LAYER, _vectorToString(drain->positionX, drain->positionY),_activationToString(drain->activation), _activationModeToString(drain->activationMode));
+    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,0\n", drain->id, drain->name, DEFAULT_LAYER, _vectorToString(drain->positionX, drain->positionY),_activationToString(drain->activation), _activationModeToString(drain->activationMode));
     if (drain->next != NULL)
         _generateDrains(drain->next);
 }

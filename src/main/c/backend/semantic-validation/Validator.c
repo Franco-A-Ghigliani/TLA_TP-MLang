@@ -225,7 +225,9 @@ static boolean _validateNodeParams(NodeParams *params, NodeType type){
         logDebugging(_logger, "Validation node parameter of type %d", current->nodeParam->type);
         switch (current->nodeParam->type)
         {
-
+            case NODE_LABEL_TYPE:
+                logDebugging(_logger, "Label with value %s", params->nodeParam->string);
+                break;
             case NODE_ACTIVATION_TYPE:
                 if(type == END_CONDITION_TYPE)
                 {

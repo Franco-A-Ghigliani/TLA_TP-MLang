@@ -64,6 +64,7 @@ static void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
         NodeParam* param = params->nodeParam;
         switch (param->type) {
         case NODE_LABEL_TYPE:
+            logDebugging(_logger, "Setting label %s to nodeComputed", param->string);
             nodeComputed->name = param->string;
             break;
         case GATE_RANDOM_DISTRIBUTION_TYPE:
