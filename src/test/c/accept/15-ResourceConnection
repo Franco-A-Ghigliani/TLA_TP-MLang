@@ -14,7 +14,7 @@ Simulation () {
 		label="Converter";
 		activation=automatic;
 		resourceColor=Red;
-		multipleConversion=single;
+		multipleConversion=false;
     }
 
     converter => storage {1};

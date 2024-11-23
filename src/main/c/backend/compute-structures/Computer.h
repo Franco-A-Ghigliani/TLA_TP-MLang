@@ -29,10 +29,14 @@ typedef struct ConnectionComputed {
     struct ConnectionComputed * next;
 } ConnectionComputed;
 
-typedef struct SimulationComputed {
+typedef struct SimulationParametersComputed {
     char * name;
     unsigned timeInterval;
     unsigned timeStepsLimit;
+} SimulationParametersComputed;
+
+typedef struct SimulationComputed {
+    struct SimulationParametersComputed * parameters;
 
     struct NodeComputed * sources;
     struct NodeComputed * pools;

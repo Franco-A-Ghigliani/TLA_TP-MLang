@@ -1,11 +1,16 @@
 #include "Computer.h"
 #include "khash.h"
+#include "../../shared/Logger.h"
+#define DEFAULT_SIMULATION_NAME "My Simulation";
+#define DEFAULT_SIMULATION_TIME_STEPS_LIMIT 100;
+#define DEFAULT_SIMULATION_TIME_INTERVAL 1;
 
 KHASH_MAP_INIT_STR(str_int, int)
 
-
 static ComputationResult* computationResult;
 static SymbolTableManagerADT symbolTableManager;
+static Logger *_logger = NULL;
+
 khash_t(str_int)* hashMap;
 khiter_t hashMapIter;
 
@@ -52,6 +57,7 @@ int _computeExpression(Expression* expression) {
 NodeComputed* _computeNode(SimulationNode* node);
 
 void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
+    logDebugging(_logger, "Setting parameters to nodeComputed");
     while (params != NULL) {
         NodeParam* param = params->nodeParam;
         switch (param->type) {
@@ -87,7 +93,8 @@ void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
 }
 
 void _computeTemplateInstantiation(TemplateInstance* instance) {
-    struct NodeInstance nodeInstance = getItemByID(symbolTableManager, instance->templateReference, true)->value.nodeInstance;
+    struct NodeInstance nodeInstance = getItemByID(symbolTableManager, instance->templateReference, true)->value.
+        nodeInstance;
     NodeComputed* newItem = _computeNode(nodeInstance.originalTemplateInTree);
     _setParams(newItem, instance->nodeParams);
 }
@@ -123,6 +130,8 @@ NodeComputed* _computeNode(SimulationNode* node) {
     case DRAIN_TYPE:
         list = &computationResult->value->drains;
         break;
+    default:
+        logError(_logger, "Unknown node type");
     }
 
     nodeComputed->next = *list;
@@ -170,6 +179,7 @@ static void _computeConnection(SimConnection* connection) {
 }
 
 static void _computeSimElements(SimElements* elements) {
+    logDebugging(_logger, "Computing simulation element of type %d", elements->type);
     switch (elements->type) {
     case CONNECTION:
         _computeConnection(elements->connection);
@@ -185,33 +195,39 @@ static void _computeSimElements(SimElements* elements) {
 }
 
 static void _computeSimParams(SimulationParams* params) {
+    logDebugging(_logger, "Computing simulation parameters");
     for (int i = 0; i < 3; i++) {
+        if (params->params[i] == NULL)
+            break;
         SimulationParam* param = params->params[i];
         switch (param->type) {
         case NAME_PARAM:
-            computationResult->value->name = param->string;
+            computationResult->value->parameters->name = param->string;
             break;
         case STEPS_PARAM:
-            computationResult->value->timeStepsLimit = param->value;
+            computationResult->value->parameters->timeStepsLimit = param->value;
             break;
         case STEP_INTERVAL_PARAM:
-            computationResult->value->timeInterval = param->value;
+            computationResult->value->parameters->timeInterval = param->value;
         }
     }
 }
 
 static void _computeSimulation(Simulation* simulation) {
+    logDebugging(_logger, "Computing main simulation");
     setSimulationScopeAsActive(symbolTableManager);
+    logDebugging(_logger, "Set simulation scope");
     _computeSimParams(simulation->params);
     _computeSimElements(simulation->simElements);
     exitCurrentScope(symbolTableManager);
 }
 
 static void _computeSimulationWrapper(SimulationWrapper* simulationWrapper) {
-    while (simulationWrapper->type != SIMULATION_TYPE)
+    while (simulationWrapper->type != SIMULATION_TYPE && simulationWrapper->type != EMPTY_PROGRAM)
         simulationWrapper = simulationWrapper->nextSimulationWrapper;
 
-
+    if (simulationWrapper->type == EMPTY_PROGRAM)
+        return;
     _computeSimulation(simulationWrapper->simulation);
 }
 
@@ -236,8 +252,15 @@ static void _destroyConnectionComputedList(struct ConnectionComputed* head) {
 //------------------------Public Functions-----------------------
 ComputationResult* compute(Program* program, SymbolTableManagerADT symbolTableManagerAdt) {
     ComputationResult* computed = malloc(sizeof(ComputationResult));
-    SimulationComputed* simComputed = malloc(sizeof(SimulationComputed));
 
+    SimulationComputed* simComputed = calloc(1,sizeof(SimulationComputed));
+    SimulationParametersComputed * computedParameters = malloc(sizeof(SimulationParametersComputed));
+    computedParameters->name = DEFAULT_SIMULATION_NAME;
+    computedParameters->timeStepsLimit = DEFAULT_SIMULATION_TIME_STEPS_LIMIT;
+    computedParameters->timeInterval = DEFAULT_SIMULATION_TIME_INTERVAL;
+    simComputed->parameters = computedParameters;
+
+    _logger = createLogger("Computer");
     computed->success = true;
     computed->value = simComputed;
 

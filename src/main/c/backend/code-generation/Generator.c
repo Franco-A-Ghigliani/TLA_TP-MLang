@@ -35,7 +35,7 @@ void shutdownGeneratorModule() {
 static void _generatePrologue(SimulationComputed* simulation) {
     fprintf(csvFile, "\n");
     fprintf(csvFile, "DIAGRAM PROPERTIES\n");
-    fprintf(csvFile, ",Name:,%s\n", simulation->name);
+    fprintf(csvFile, ",Name:,%s\n", simulation->parameters->name);
     fprintf(csvFile, ",URL:,None\n");
     fprintf(csvFile, ",Owner:,None\n");
 
@@ -46,8 +46,8 @@ static void _generatePrologue(SimulationComputed* simulation) {
     fprintf(csvFile, ",Creation Date:,%s\n", dateBuffer);
     fprintf(csvFile, ",Last Change:,%s\n", dateBuffer);
 
-    fprintf(csvFile, ",Time Interval:,%u\n", simulation->timeInterval);
-    fprintf(csvFile, ",Time Steps Limit:,%u\n", simulation->timeStepsLimit);
+    fprintf(csvFile, ",Time Interval:,%u\n", simulation->parameters->timeInterval);
+    fprintf(csvFile, ",Time Steps Limit:,%u\n", simulation->parameters->timeStepsLimit);
     fprintf(csvFile, ",Number of Runs (total):,%d\n", DEFAULT_NUMBER_OF_RUNS);
     fprintf(csvFile, ",Exporting Codec:,v2.0\n");
     fprintf(csvFile, "\n");
@@ -190,6 +190,7 @@ static void _generateStateConnections(ConnectionComputed * stateConnections) {
  * Generates the output of the program.
  */
 static void _generateProgram(SimulationComputed* simulation) {
+
     if (simulation->sources != NULL) {
         fprintf(csvFile, "SOURCES\n");
         fprintf(csvFile,

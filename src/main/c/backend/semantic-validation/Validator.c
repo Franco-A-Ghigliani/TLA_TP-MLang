@@ -221,9 +221,10 @@ static boolean _validateNodeParams(NodeParams *params, NodeType type){
     NodeParams *current = params;
     while (current != NULL)
     {
+        int aux;
+        logDebugging(_logger, "Validation node parameter of type %d", current->nodeParam->type);
         switch (current->nodeParam->type)
         {
-            int aux;
 
             case NODE_ACTIVATION_TYPE:
                 if(type == END_CONDITION_TYPE)
@@ -329,13 +330,15 @@ static boolean _validateNode(SimulationNode *node){
         logError(_logger, "Invalid node parameters");
         return false;
     }
-    
+
+    logDebugging(_logger, "Validating simulation node");
     SymbolTableItem *newItem = calloc(1, sizeof(SymbolTableItem));
     newItem->type = node->isTemplate? NODE_TEMPLATE : NODE;
     newItem->id = node->id;
     newItem->value.nodeInTree = node;
     
     addItem(getActiveScope(_manager), newItem);
+    logDebugging(_logger, "Added item to active scope");
     return true;
 }
 
@@ -386,6 +389,8 @@ static boolean _validateSimulationElements(SimElements *elements){
         return false;
     }
 
+    logDebugging(_logger, "Validating simulation element of type %d", elements->type);
+
     boolean isValid = true;
 
     switch (elements->type)
@@ -393,7 +398,8 @@ static boolean _validateSimulationElements(SimElements *elements){
         case CONNECTION:
             isValid = _validateConnection(elements->connection);
             break;
-        case NODE_TYPE || NODE_TEMPLATE_TYPE:
+        case NODE_TEMPLATE_TYPE:
+        case NODE_TYPE:
             isValid = _validateNode(elements->node);
             break;
         case TEMPLATE_INSTANCIATION:
@@ -403,7 +409,7 @@ static boolean _validateSimulationElements(SimElements *elements){
             return true;
             break;
         default:
-        logError(_logger, "Failed validation for simulation element of type: %d", elements->type);
+            logError(_logger, "Failed validation for simulation element of type: %d", elements->type);
             break;
     }
 
@@ -417,8 +423,11 @@ static boolean _validateSimulationElements(SimElements *elements){
 #pragma region SimulationValidation
 static boolean _validateSimulationParams(SimulationParams *params){
     boolean foundName = false, foundSteps = false, foundInterval = false;
+
     for (size_t i = 0; i < 3; i++)
     {
+        if (params->params[i] == NULL)
+            break;
         switch (params->params[i]->type)
         {
             case NAME_PARAM:
@@ -444,7 +453,7 @@ static boolean _validateSimulationParams(SimulationParams *params){
                 break;
         }
     }
-    return foundInterval && foundName && foundSteps;
+    return true;
 }
 
 static boolean _validateSimulation(Simulation* simulation){
@@ -527,6 +536,7 @@ static boolean _validateSimWrappers(SimulationWrapper* simWrapper){
         return true;
     }
 
+    logDebugging( _logger,"Validating simulation wrapper of type %d", simWrapper->type);
     boolean isValid;
 
     switch (simWrapper->type)
