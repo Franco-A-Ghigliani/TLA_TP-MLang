@@ -529,6 +529,7 @@ static boolean _validateSimTemplate(SimulationTemplate* template){
     newItem->type = SIM_TEMPLATE;
     newItem->id = template->name;
     newItem->value.simulationTemplate.internalSymbolTable = newTable;
+    newItem->value.simulationTemplate.elementsInTree = template->simElements;
     addItem(getActiveScope(_manager), newItem);
 
     setNewActiveScope(_manager, newTable);

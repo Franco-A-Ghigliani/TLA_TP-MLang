@@ -21,6 +21,7 @@ typedef enum
 typedef struct SimulationTemplateSymbol
 {
     SymbolTableADT internalSymbolTable;
+    SimElements *elementsInTree;
 } SimulationTemplateSymbol;
 
 typedef union SymbolTableValue
