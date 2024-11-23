@@ -358,7 +358,7 @@ static boolean _validateInstance(TemplateInstance *instance){
 
     if(refItem->type == NODE_TEMPLATE){
         boolean isValid = _validateNodeParams(instance->nodeParams, refItem->value.nodeInTree->type);
-        if(isValid){
+        if(isValid) {
             SymbolTableItem *newItem = calloc(1, sizeof(SymbolTableItem));
             newItem->id = instance->name;
             newItem->type = NODE_TEMPLATE_INSTANCE;
@@ -403,7 +403,7 @@ static boolean _validateSimulationElements(SimElements *elements){
             return true;
             break;
         default:
-        logError(_logger, "Invalid element type");
+        logError(_logger, "Failed validation for simulation element of type: %d", elements->type);
             break;
     }
 

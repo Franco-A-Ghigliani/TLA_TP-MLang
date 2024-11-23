@@ -201,13 +201,16 @@ static void _computeSimParams(SimulationParams* params) {
 }
 
 static void _computeSimulation(Simulation* simulation) {
+    setSimulationScopeAsActive(symbolTableManager);
     _computeSimParams(simulation->params);
     _computeSimElements(simulation->simElements);
+    exitCurrentScope(symbolTableManager);
 }
 
 static void _computeSimulationWrapper(SimulationWrapper* simulationWrapper) {
     while (simulationWrapper->type != SIMULATION_TYPE)
         simulationWrapper = simulationWrapper->nextSimulationWrapper;
+
 
     _computeSimulation(simulationWrapper->simulation);
 }
