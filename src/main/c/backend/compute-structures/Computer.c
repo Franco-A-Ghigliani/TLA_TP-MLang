@@ -16,10 +16,12 @@ khiter_t hashMapIter;
 
 static int id = 100;
 
-int _computeFactor(Factor* factor);
-int _computeExpression(Expression* expression);
+static int _computeFactor(Factor* factor);
+static int _computeExpression(Expression* expression);
+static void _computeSimulation(Simulation* simulation);
+static void _computeSimElements(SimElements* elements);
 
-int _computeFactor(Factor* factor) {
+static int _computeFactor(Factor* factor) {
     switch (factor->type) {
     case FACTOR_STRING:
         return getItemByID(symbolTableManager, factor->id, true)->value.intValue;
@@ -30,7 +32,7 @@ int _computeFactor(Factor* factor) {
     }
 }
 
-int _computeExpression(Expression* expression) {
+static int _computeExpression(Expression* expression) {
     int leftValue, rightValue;
     switch (expression->type) {
     case ADDITION:
@@ -54,9 +56,9 @@ int _computeExpression(Expression* expression) {
     }
 }
 
-NodeComputed* _computeNode(SimulationNode* node);
+static NodeComputed* _computeNode(SimulationNode* node);
 
-void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
+static void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
     logDebugging(_logger, "Setting parameters to nodeComputed");
     while (params != NULL) {
         NodeParam* param = params->nodeParam;
@@ -73,6 +75,10 @@ void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
         case NODE_ACTIVATION_MODE_TYPE:
             nodeComputed->activationMode = param->activationMode;
             break;
+        case NODE_POSITION_TYPE:
+            nodeComputed->positionX = _computeExpression(param->vector->x);
+            nodeComputed->positionY = _computeExpression(param->vector->y);
+            break;
         case POOL_INITIAL_RESOURCES_TYPE:
             nodeComputed->initialResources = _computeExpression(param->expression);
             break;
@@ -87,21 +93,40 @@ void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
             break;
         case POOL_DRAIN_ON_OVERFLOW_TYPE:
             nodeComputed->drainOnOverflow = param->boolean;
+            break;
+        case DELAY_QUEUE_TYPE:
+            nodeComputed->queue = param->boolean;
+            break;
+        case CONVERTER_MULTICONVERSION_TYPE:
+            nodeComputed->multiConversion = param->boolean;
+            break;
+        case NODE_RESOURCE_COLOR_TYPE:
+            nodeComputed->color = param->color;
+            break;
+        default:
+            logError(_logger, "Unhandled node parameter of type %d", param->type);
         }
         params = params->nextParams;
     }
 }
 
-void _computeTemplateInstantiation(TemplateInstance* instance) {
-    struct NodeInstance nodeInstance = getItemByID(symbolTableManager, instance->templateReference, true)->value.
-        nodeInstance;
-    NodeComputed* newItem = _computeNode(nodeInstance.originalTemplateInTree);
-    _setParams(newItem, instance->nodeParams);
+static void _computeTemplateInstantiation(TemplateInstance* instance) {
+    switch (instance->type) {
+    case SIMULATION_INSTANCE:
+        _computeSimElements(getItemByID(symbolTableManager, instance->templateReference, true)->value.simulationTemplate.elementsInTree);
+        break;
+    case NODE_INSTANCE:
+        struct NodeInstance nodeInstance = getItemByID(symbolTableManager, instance->templateReference, true)->value.nodeInstance;
+        NodeComputed* newItem = _computeNode(nodeInstance.originalTemplateInTree);
+        _setParams(newItem, instance->nodeParams);
+        break;
+    }
 }
 
 
 //Returns the new created NodeComputed
-NodeComputed* _computeNode(SimulationNode* node) {
+static NodeComputed* _computeNode(SimulationNode* node) {
+    logDebugging(_logger, "Computing simulation node of type %d and name %s", node->type, node->id);
     NodeComputed* nodeComputed = malloc(sizeof(NodeComputed));
     nodeComputed->id = id;
     int ret;
@@ -109,6 +134,20 @@ NodeComputed* _computeNode(SimulationNode* node) {
     if (ret)
         kh_value(hashMap, hashMapIter) = id++;
 
+    //Set defaults
+    nodeComputed->name="Unnamed";
+    nodeComputed->initialResources=0;
+    nodeComputed->capacityLimit=-1;
+    nodeComputed->capacityDisplay=0;
+    nodeComputed->queue=false;
+    nodeComputed->drainOnOverflow=false;
+    nodeComputed->multiConversion=false;
+    nodeComputed->activation=AUTOMATIC;
+    nodeComputed->activationMode=PULL_ANY;
+    nodeComputed->color=BLACK;
+    nodeComputed->positionX=0;
+    nodeComputed->positionY=0;
+    nodeComputed->distribution=true;
     nodeComputed->next = NULL;
 
     _setParams(nodeComputed, node->nodeParams);
@@ -129,6 +168,12 @@ NodeComputed* _computeNode(SimulationNode* node) {
         break;
     case DRAIN_TYPE:
         list = &computationResult->value->drains;
+        break;
+    case END_CONDITION_TYPE:
+        list = &computationResult->value->endConditions;
+        break;
+    case DELAY_TYPE:
+        list = &computationResult->value->delays;
         break;
     default:
         logError(_logger, "Unknown node type");
@@ -178,6 +223,7 @@ static void _computeConnection(SimConnection* connection) {
     *list = connectionComputed;
 }
 
+
 static void _computeSimElements(SimElements* elements) {
     logDebugging(_logger, "Computing simulation element of type %d", elements->type);
     switch (elements->type) {
@@ -189,6 +235,7 @@ static void _computeSimElements(SimElements* elements) {
         break;
     case TEMPLATE_INSTANCIATION:
         _computeTemplateInstantiation(elements->templateInst);
+        break;
     }
     if (elements->next != NULL)
         _computeSimElements(elements->next);

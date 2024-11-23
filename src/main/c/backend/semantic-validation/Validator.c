@@ -234,7 +234,7 @@ static boolean _validateNodeParams(NodeParams *params, NodeType type){
                 }
                 break;
             case NODE_ACTIVATION_MODE_TYPE:
-                if(type == CONVERTER_TYPE || type == DELAY_TYPE || type == END_CONDITION_TYPE){
+                if(type == DELAY_TYPE || type == END_CONDITION_TYPE){
                     logError(_logger, "ActivationMode is not valid in this node");
                     return false;
                 }

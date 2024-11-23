@@ -10,12 +10,16 @@ typedef struct NodeComputed {
     unsigned initialResources;
     int capacityLimit;
     int capacityDisplay;
+    boolean queue;
     boolean drainOnOverflow;
+    boolean multiConversion;
     Activation activation;
     ActivationMode activationMode;
     Color color;
     ActivationMode mode;
     boolean distribution;
+    int positionX;
+    int positionY;
 
     struct NodeComputed * next;
 } NodeComputed;
@@ -43,6 +47,8 @@ typedef struct SimulationComputed {
     struct NodeComputed * gates;
     struct NodeComputed * converters;
     struct NodeComputed * drains;
+    struct NodeComputed * endConditions;
+    struct NodeComputed * delays;
 
     struct ConnectionComputed * resourceConnections;
     struct ConnectionComputed * stateConnections;

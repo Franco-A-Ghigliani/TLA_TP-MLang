@@ -2,7 +2,8 @@ Simulation (name="Test simulation", stepInterval=1, stepsToSimulate=100) {
 	Converter testConverter {
 		label="Converter de testeo";
 		activation=automatic;
+		activationMode=pullAny;
 		resourceColor=Green;
-		multipleConversion=single;
+		multipleConversion=false;
 	}
 }
