@@ -306,7 +306,7 @@ static boolean _validateNodeParams(NodeParams *params, NodeType type){
                 }
                 break;
             case DELAY_QUEUE_TYPE:
-                if(type != DRAIN_TYPE){
+                if(type != DELAY_TYPE){
                     logError(_logger, "Queue is not valid in this node");
                     return false;
                 }
