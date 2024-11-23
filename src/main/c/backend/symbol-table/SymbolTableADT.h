@@ -51,6 +51,7 @@ typedef struct SymbolTableItem
 void exitCurrentScope(SymbolTableManagerADT manager);
 SymbolTableADT getActiveScope(const SymbolTableManagerADT manager);
 void setNewActiveScope(SymbolTableManagerADT manager, SymbolTableADT newTable);
+void setSimulationScopeAsActive(SymbolTableManagerADT manager);
 SymbolTableADT getNextScope(const SymbolTableADT activeScope);
 void resetScope(SymbolTableManagerADT manager);
 

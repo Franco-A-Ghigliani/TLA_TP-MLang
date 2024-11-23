@@ -35,6 +35,10 @@ void setNewActiveScope(SymbolTableManagerADT manager, SymbolTableADT newTable){
     manager->activeTable = newTable;
 }
 
+void setSimulationScopeAsActive(SymbolTableManagerADT manager){
+    setNewActiveScope(manager, manager->simulationTable);
+}
+
 SymbolTableADT getNextScope(const SymbolTableADT activeScope){
     return activeScope->lastActiveTable;
 }
@@ -106,7 +110,7 @@ SymbolTableItem* getItemByID(const SymbolTableManagerADT manager, const char* id
         }
         if(!recursive)
             break;
-            
+
         currentTable = currentTable->lastActiveTable;
     }
     return NULL;
