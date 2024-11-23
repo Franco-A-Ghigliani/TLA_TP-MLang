@@ -370,7 +370,13 @@ static boolean _validateInstance(TemplateInstance *instance){
             addItem(getActiveScope(_manager), newItem);
         }
         return isValid;
-    } else if(refItem->type != SIM_TEMPLATE){
+    } else if(refItem->type == SIM_TEMPLATE){
+        SymbolTableADT activeScope = getActiveScope(_manager);
+        if(activeScope == refItem->value.simulationTemplate.internalSymbolTable){
+            logError(_logger, "Self-referencing template detected.");
+            return false;
+        }
+    } else {
         logError(_logger, "Invalid type. Expected Template:Node or Template:Simulation");
         return false;
     }
