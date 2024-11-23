@@ -1,9 +1,3 @@
 Template:Simulation sim_template () { 
-    Source src {
-        label="SOURCE FROM TEMPLATE";
-        position=(-700, 205);
-        activation = automatic;
-        resourceColor = Red;
-    }
     new sim_template instance;
 }
