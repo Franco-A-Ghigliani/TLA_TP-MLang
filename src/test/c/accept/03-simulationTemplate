@@ -20,7 +20,9 @@ Simulation () {
         drainOnOverflow = false;
     }
 
-    new sim_template templateInstance;
+    new sim_template templateInstance1;
+    new sim_template templateInstance2;
+    new sim_template templateInstance3;
 
-    templateInstance.src => storage {1};
+    templateInstance1.src => storage {1};
 }

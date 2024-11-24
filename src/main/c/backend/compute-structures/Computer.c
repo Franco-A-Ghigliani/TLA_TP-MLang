@@ -24,6 +24,10 @@ static Logger *_logger = NULL;
 static int id = 100;
 static int position = 0;
 
+static int offsetX = 0;
+static int offsetY = 0;
+char * simulationTemplate = NULL;
+
 static int _computeFactor(Factor* factor);
 static int _computeExpression(Expression* expression);
 
@@ -124,8 +128,14 @@ static boolean _setParams(NodeComputed* nodeComputed, NodeParams* params) {
 static boolean _computeTemplateInstantiation(TemplateInstance* instance) {
     switch (instance->type) {
     case SIMULATION_INSTANCE:
+        offsetX = (rand() % MAX_POSITION_X + MIN_POSITION_X)/5;
+        offsetY = (rand() % MAX_POSITION_Y + MIN_POSITION_Y)/5;
+        simulationTemplate = instance->name;
         if (_computeSimElements(getItemByID(symbolTableManager, instance->templateReference, true)->value.simulationTemplate.elementsInTree) == false)
             return false;
+        simulationTemplate = NULL;
+        offsetX = 0;
+        offsetY = 0;
         break;
     case NODE_INSTANCE:
         struct NodeInstance nodeInstance = getItemByID(symbolTableManager, instance->templateReference, true)->value.nodeInstance;
@@ -150,23 +160,27 @@ static NodeComputed* _computeNode(SimulationNode* node, char * originalId) {
 
     NodeComputed* nodeComputed = malloc(sizeof(NodeComputed));
 
-    //Set id and put it in hashMap
-    char *duplicatedId;
+    //Set id in case of nodeInstance
+    char * nodeName;
     if (originalId != NULL)
-        duplicatedId = strdup(originalId);
+         nodeName = originalId;
     else
-        duplicatedId = strdup(node->id);
+         nodeName = node->id;
 
-    if (!duplicatedId) {
-        logError(_logger, "Failed to allocate memory for node label %s", node->id);
-        return NULL;
+    //Set id in case of simulationInstance
+    char name[150];
+    if (simulationTemplate != NULL) {
+        strcpy(name, simulationTemplate);
+        strcat(name, ".");
     }
+    strcat(name, nodeName);
 
+    char * finalName = strdup(name);
     int ret;
-    hashMapIter = kh_put(str_int, hashMap, duplicatedId, &ret);
+    hashMapIter = kh_put(str_int, hashMap,  finalName, &ret);
     if (!ret) {
         logError(_logger, "Node label %s already exists in hashMap", node->id);
-        free(duplicatedId);
+        free( nodeName);
         return NULL;
     }
 
@@ -184,14 +198,17 @@ static NodeComputed* _computeNode(SimulationNode* node, char * originalId) {
     nodeComputed->activation=PASSIVE;
     nodeComputed->activationMode=PULL_ANY;
     nodeComputed->color=BLACK;
-    nodeComputed->positionX=rand() % MAX_POSITION_X + MIN_POSITION_X;
-    nodeComputed->positionY=rand() % MAX_POSITION_Y + MIN_POSITION_Y;
+    nodeComputed->positionX = rand() % MAX_POSITION_X + MIN_POSITION_X;
+    nodeComputed->positionY = rand() % MAX_POSITION_Y + MIN_POSITION_Y;
     nodeComputed->randomDistribution=false;
     nodeComputed->layerPosition = position++;
     nodeComputed->next = NULL;
 
     if (_setParams(nodeComputed, node->nodeParams) == false)
         return NULL;
+
+    nodeComputed->positionX += offsetX;
+    nodeComputed->positionY += offsetY;
 
     NodeComputed** list = NULL;
     switch (node->type) {
@@ -229,6 +246,18 @@ static NodeComputed* _computeNode(SimulationNode* node, char * originalId) {
     return nodeComputed;
 }
 
+void _concatenateReferences(NodeReference *head, char * buffer) {
+    NodeReference *current = head;
+    while (current != NULL) {
+        strcat(buffer, current->reference);
+        if (current->next != NULL)
+            strcat(buffer, ".");
+        current = current->next;
+    }
+
+}
+
+
 static boolean _computeConnection(SimConnection* connection) {
     ConnectionComputed* connectionComputed = malloc(sizeof(ConnectionComputed));
     connectionComputed->id = id++;
@@ -237,17 +266,17 @@ static boolean _computeConnection(SimConnection* connection) {
     int sourceId = 0;
     int targetId = 0;
 
-    NodeReference* from = connection->from;
-    while (from->next != NULL)
-        from = from->next;
-    hashMapIter = kh_get(str_int, hashMap, from->reference);
+    char from[50];
+    _concatenateReferences(connection->from, from);
+
+    char to[50];
+    _concatenateReferences(connection->to, to);
+
+    hashMapIter = kh_get(str_int, hashMap, from);
     if (hashMapIter != kh_end(hashMap))
         sourceId = kh_value(hashMap, hashMapIter);
 
-    NodeReference* to = connection->to;
-    while (to->next != NULL)
-        to = to->next;
-    hashMapIter = kh_get(str_int, hashMap, to->reference);
+    hashMapIter = kh_get(str_int, hashMap, to);
     if (hashMapIter != kh_end(hashMap))
         targetId = kh_value(hashMap, hashMapIter);
 
