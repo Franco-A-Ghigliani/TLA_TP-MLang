@@ -256,7 +256,7 @@ simConnection: nodeReference[from] RESOURCE_CONNECT nodeReference[to] OPEN_BRACK
 
 formula: LESS_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN_TYPE);}
 	| GREATER_THAN expression[exp]																		{$$ = arithmeticFormulaSemanticAction($exp, GREATER_THAN_TYPE);}
-	| expression[exp] PERCENTAGE 																		{$$ = arithmeticFormulaSemanticAction($exp, LESS_THAN_TYPE);}
+	| expression[exp] PERCENTAGE 																		{$$ = arithmeticFormulaSemanticAction($exp, PERCENTAGE_TYPE);}
 	| expression[exp] 																					{$$ = arithmeticFormulaSemanticAction($exp, FORMULA_EXPRESSION);}
 	;
 
