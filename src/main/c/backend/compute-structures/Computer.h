@@ -17,7 +17,8 @@ typedef struct NodeComputed {
     ActivationMode activationMode;
     Color color;
     ActivationMode mode;
-    boolean distribution;
+    boolean randomDistribution;
+    int layerPosition;
     int positionX;
     int positionY;
 
@@ -29,6 +30,7 @@ typedef struct ConnectionComputed {
     Formula * formula;
     unsigned sourceId;
     unsigned targetId;
+    int layerPosition;
 
     struct ConnectionComputed * next;
 } ConnectionComputed;
@@ -61,6 +63,8 @@ typedef struct ComputationResult {
 
 struct CompilerState;
 
+void initializeComputerModule();
+void shutdownComputerModule();
 ComputationResult* compute(Program* program, SymbolTableManagerADT symbolTableManagerAdt);
 void destroyComputationResult(ComputationResult * computationResult);
 

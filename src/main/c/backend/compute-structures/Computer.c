@@ -1,4 +1,7 @@
 #include "Computer.h"
+
+#include <time.h>
+
 #include "khash.h"
 #include "../../shared/Logger.h"
 #define DEFAULT_SIMULATION_NAME "My Simulation";
@@ -6,20 +9,22 @@
 #define DEFAULT_SIMULATION_TIME_INTERVAL 1;
 
 KHASH_MAP_INIT_STR(str_int, int)
+khash_t(str_int)* hashMap;
+khiter_t hashMapIter;
 
 static ComputationResult* computationResult;
 static SymbolTableManagerADT symbolTableManager;
 static Logger *_logger = NULL;
 
-khash_t(str_int)* hashMap;
-khiter_t hashMapIter;
-
 static int id = 100;
+static int position = 0;
 
 static int _computeFactor(Factor* factor);
 static int _computeExpression(Expression* expression);
-static void _computeSimulation(Simulation* simulation);
-static void _computeSimElements(SimElements* elements);
+
+static boolean _computeSimulation(Simulation* simulation);
+static boolean _computeSimElements(SimElements* elements);
+static NodeComputed* _computeNode(SimulationNode* node, char * originalId);
 
 static int _computeFactor(Factor* factor) {
     switch (factor->type) {
@@ -56,19 +61,17 @@ static int _computeExpression(Expression* expression) {
     }
 }
 
-static NodeComputed* _computeNode(SimulationNode* node);
-
-static void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
+static boolean _setParams(NodeComputed* nodeComputed, NodeParams* params) {
     logDebugging(_logger, "Setting parameters to nodeComputed");
+
     while (params != NULL) {
         NodeParam* param = params->nodeParam;
         switch (param->type) {
         case NODE_LABEL_TYPE:
-            logDebugging(_logger, "Setting label %s to nodeComputed", param->string);
             nodeComputed->name = param->string;
             break;
         case GATE_RANDOM_DISTRIBUTION_TYPE:
-            nodeComputed->distribution = param->boolean;
+            nodeComputed->randomDistribution = param->boolean;
             break;
         case NODE_ACTIVATION_TYPE:
             nodeComputed->activation = param->activation;
@@ -106,56 +109,90 @@ static void _setParams(NodeComputed* nodeComputed, NodeParams* params) {
             break;
         default:
             logError(_logger, "Unhandled node parameter of type %d", param->type);
+            return false;
         }
         params = params->nextParams;
     }
+    return true;
 }
 
-static void _computeTemplateInstantiation(TemplateInstance* instance) {
+static boolean _computeTemplateInstantiation(TemplateInstance* instance) {
     switch (instance->type) {
     case SIMULATION_INSTANCE:
-        _computeSimElements(getItemByID(symbolTableManager, instance->templateReference, true)->value.simulationTemplate.elementsInTree);
+        if (_computeSimElements(getItemByID(symbolTableManager, instance->templateReference, true)->value.simulationTemplate.elementsInTree) == false)
+            return false;
         break;
     case NODE_INSTANCE:
         struct NodeInstance nodeInstance = getItemByID(symbolTableManager, instance->templateReference, true)->value.nodeInstance;
-        NodeComputed* newItem = _computeNode(nodeInstance.originalTemplateInTree);
-        _setParams(newItem, instance->nodeParams);
+        NodeComputed* newItem = _computeNode(nodeInstance.originalTemplateInTree, instance->name);
+        if (newItem == NULL)
+            return false;
+        if (_setParams(newItem, instance->nodeParams) == false)
+            return false;
         break;
+    default:
+        logError(_logger, "Unhandled template type %d", instance->type);
+        return false;
     }
+    return true;
 }
 
 
 //Returns the new created NodeComputed
-static NodeComputed* _computeNode(SimulationNode* node) {
+//originalId is used when computing node from template to avoid using the template id
+static NodeComputed* _computeNode(SimulationNode* node, char * originalId) {
     logDebugging(_logger, "Computing simulation node of type %d and name %s", node->type, node->id);
+
     NodeComputed* nodeComputed = malloc(sizeof(NodeComputed));
-    nodeComputed->id = id;
+
+    //Set id and put it in hashMap
+    char *duplicatedId;
+    if (originalId != NULL)
+        duplicatedId = strdup(originalId);
+    else
+        duplicatedId = strdup(node->id);
+
+    if (!duplicatedId) {
+        logError(_logger, "Failed to allocate memory for node label %s", node->id);
+        return NULL;
+    }
+
     int ret;
-    hashMapIter = kh_put(str_int, hashMap, strdup(node->id), &ret);
-    if (ret)
-        kh_value(hashMap, hashMapIter) = id++;
+    hashMapIter = kh_put(str_int, hashMap, duplicatedId, &ret);
+    if (!ret) {
+        logError(_logger, "Node label %s already exists in hashMap", node->id);
+        free(duplicatedId);
+        return NULL;
+    }
+
+    kh_value(hashMap, hashMapIter) = id++;
+    nodeComputed->id = id;
 
     //Set defaults
     nodeComputed->name="";
     nodeComputed->initialResources=0;
     nodeComputed->capacityLimit=-1;
-    nodeComputed->capacityDisplay=0;
+    nodeComputed->capacityDisplay=15;
     nodeComputed->queue=false;
     nodeComputed->drainOnOverflow=false;
     nodeComputed->multiConversion=false;
-    nodeComputed->activation=AUTOMATIC;
+    nodeComputed->activation=PASSIVE;
     nodeComputed->activationMode=PULL_ANY;
     nodeComputed->color=BLACK;
     nodeComputed->positionX=0;
     nodeComputed->positionY=0;
-    nodeComputed->distribution=true;
+    nodeComputed->randomDistribution=false;
+    nodeComputed->layerPosition = position++;
     nodeComputed->next = NULL;
 
-    _setParams(nodeComputed, node->nodeParams);
+    if (_setParams(nodeComputed, node->nodeParams) == false)
+        return NULL;
 
     NodeComputed** list = NULL;
     switch (node->type) {
     case SOURCE_TYPE:
+        nodeComputed->activationMode = PUSH_ANY;
+        nodeComputed->activation = AUTOMATIC;
         list = &computationResult->value->sources;
         break;
     case POOL_TYPE:
@@ -178,6 +215,7 @@ static NodeComputed* _computeNode(SimulationNode* node) {
         break;
     default:
         logError(_logger, "Unknown node type");
+        return NULL;
     }
 
     nodeComputed->next = *list;
@@ -186,9 +224,10 @@ static NodeComputed* _computeNode(SimulationNode* node) {
     return nodeComputed;
 }
 
-static void _computeConnection(SimConnection* connection) {
+static boolean _computeConnection(SimConnection* connection) {
     ConnectionComputed* connectionComputed = malloc(sizeof(ConnectionComputed));
     connectionComputed->id = id++;
+    connectionComputed->layerPosition = position++;
 
     int sourceId = 0;
     int targetId = 0;
@@ -218,35 +257,51 @@ static void _computeConnection(SimConnection* connection) {
         break;
     case STATE:
         list = &computationResult->value->stateConnections;
+        break;
+    default:
+        logError(_logger, "Unknown connection type");
+        return false;
     }
 
     connectionComputed->next = *list;
     *list = connectionComputed;
+    return true;
 }
 
 
-static void _computeSimElements(SimElements* elements) {
+static boolean _computeSimElements(SimElements* elements) {
     logDebugging(_logger, "Computing simulation element of type %d", elements->type);
     switch (elements->type) {
     case CONNECTION:
-        _computeConnection(elements->connection);
+        if (_computeConnection(elements->connection)==false)
+            return false;
         break;
     case NODE_TYPE:
-        _computeNode(elements->node);
+        if (_computeNode(elements->node, elements->node->id)==false)
+            return false;
         break;
     case TEMPLATE_INSTANCIATION:
-        _computeTemplateInstantiation(elements->templateInst);
+        if (_computeTemplateInstantiation(elements->templateInst) == false)
+            return false;
         break;
+    case NODE_TEMPLATE_TYPE:
+    case EMPTY:
+        //Nothing to compute
+        break;
+    default:
+        logError(_logger, "Unknown simulation element type");
+        return false;
     }
+
     if (elements->next != NULL)
-        _computeSimElements(elements->next);
+        return _computeSimElements(elements->next);
+    return true;
 }
 
-static void _computeSimParams(SimulationParams* params) {
+static boolean _computeSimParams(SimulationParams* params) {
     logDebugging(_logger, "Computing simulation parameters");
-    for (int i = 0; i < 3; i++) {
-        if (params->params[i] == NULL)
-            break;
+
+    for (int i = 0; i < 3 && params->params[i] != NULL; i++) {
         SimulationParam* param = params->params[i];
         switch (param->type) {
         case NAME_PARAM:
@@ -257,26 +312,34 @@ static void _computeSimParams(SimulationParams* params) {
             break;
         case STEP_INTERVAL_PARAM:
             computationResult->value->parameters->timeInterval = param->value;
+            break;
+        default:
+            logError(_logger, "Unknown simulation parameter type");
+            return false;
         }
     }
+    return true;
 }
 
-static void _computeSimulation(Simulation* simulation) {
+static boolean _computeSimulation(Simulation* simulation) {
     logDebugging(_logger, "Computing main simulation");
+
     setSimulationScopeAsActive(symbolTableManager);
-    logDebugging(_logger, "Set simulation scope");
-    _computeSimParams(simulation->params);
-    _computeSimElements(simulation->simElements);
+    if (_computeSimParams(simulation->params) == false)
+        return false;
+    if (_computeSimElements(simulation->simElements)==false)
+        return false;
     exitCurrentScope(symbolTableManager);
 }
 
-static void _computeSimulationWrapper(SimulationWrapper* simulationWrapper) {
+static boolean _computeSimulationWrapper(SimulationWrapper* simulationWrapper) {
     while (simulationWrapper->type != SIMULATION_TYPE && simulationWrapper->type != EMPTY_PROGRAM)
         simulationWrapper = simulationWrapper->nextSimulationWrapper;
 
-    if (simulationWrapper->type == EMPTY_PROGRAM)
-        return;
-    _computeSimulation(simulationWrapper->simulation);
+    if (simulationWrapper->type == SIMULATION_TYPE)
+        return _computeSimulation(simulationWrapper->simulation);
+
+    return true;
 }
 
 static void _destroyNodeComputedList(struct NodeComputed* head) {
@@ -298,18 +361,29 @@ static void _destroyConnectionComputedList(struct ConnectionComputed* head) {
 }
 
 //------------------------Public Functions-----------------------
+void initializeComputerModule() {
+    _logger = createLogger("Computer");
+
+}
+
+void shutdownComputerModule() {
+    if (_logger != NULL) {
+        destroyLogger(_logger);
+    }
+}
+
+
 ComputationResult* compute(Program* program, SymbolTableManagerADT symbolTableManagerAdt) {
     ComputationResult* computed = malloc(sizeof(ComputationResult));
+    computed->success = true;
 
+    //Set defaults to simulation parameters
     SimulationComputed* simComputed = calloc(1,sizeof(SimulationComputed));
     SimulationParametersComputed * computedParameters = malloc(sizeof(SimulationParametersComputed));
     computedParameters->name = DEFAULT_SIMULATION_NAME;
     computedParameters->timeStepsLimit = DEFAULT_SIMULATION_TIME_STEPS_LIMIT;
     computedParameters->timeInterval = DEFAULT_SIMULATION_TIME_INTERVAL;
     simComputed->parameters = computedParameters;
-
-    _logger = createLogger("Computer");
-    computed->success = true;
     computed->value = simComputed;
 
     computationResult = computed;
@@ -322,11 +396,15 @@ ComputationResult* compute(Program* program, SymbolTableManagerADT symbolTableMa
 }
 
 void destroyComputationResult(ComputationResult* computationResult) {
+    free(computationResult->value->parameters);
+
     _destroyNodeComputedList(computationResult->value->sources);
     _destroyNodeComputedList(computationResult->value->pools);
     _destroyNodeComputedList(computationResult->value->gates);
     _destroyNodeComputedList(computationResult->value->converters);
     _destroyNodeComputedList(computationResult->value->drains);
+    _destroyNodeComputedList(computationResult->value->delays);
+    _destroyNodeComputedList(computationResult->value->endConditions);
 
     _destroyConnectionComputedList(computationResult->value->resourceConnections);
     _destroyConnectionComputedList(computationResult->value->stateConnections);

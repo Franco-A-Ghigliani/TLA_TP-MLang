@@ -22,6 +22,7 @@ const int main(const int count, const char ** arguments) {
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
 	initializeValidatorModule();
+	initializeComputerModule();
 	initializeGeneratorModule();
 
 	// Logs the arguments of the application.
@@ -80,7 +81,9 @@ const int main(const int count, const char ** arguments) {
 	destroySymbolTableManager(compilerState.symbolTables);
 
 	logDebugging(logger, "Releasing modules resources...");
-	// shutdownGeneratorModule();
+
+	shutdownGeneratorModule();
+	shutdownComputerModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();

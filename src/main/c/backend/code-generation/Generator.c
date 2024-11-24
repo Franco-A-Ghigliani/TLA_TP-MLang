@@ -1,28 +1,19 @@
 #include "Generator.h"
 
+#include <math.h>
 #include <time.h>
 
 #include "../symbol-table/SymbolTableADT.h"
-/* MODULE INTERNAL STATE */
 
 #define DEFAULT_LAYER 80
 #define DEFAULT_NUMBER_OF_RUNS 10
+#define CSV_NAME "result.csv"
 
 static Logger* _logger = NULL;
+SymbolTableManagerADT manager = NULL;
+static FILE* csvFile = NULL;
 
-static const char* csvName = "result.csv";
-SymbolTableManagerADT manager;
-static FILE* csvFile;
 
-void initializeGeneratorModule() {
-    _logger = createLogger("Generator");
-}
-
-void shutdownGeneratorModule() {
-    if (_logger != NULL) {
-        destroyLogger(_logger);
-    }
-}
 
 /** PRIVATE FUNCTIONS */
 
@@ -34,11 +25,12 @@ void shutdownGeneratorModule() {
  */
 static void _generatePrologue(SimulationComputed* simulation) {
     logDebugging(_logger, "Generating prologue");
+
     fprintf(csvFile, "\n");
     fprintf(csvFile, "DIAGRAM PROPERTIES\n");
     fprintf(csvFile, ",Name:,%s\n", simulation->parameters->name);
-    fprintf(csvFile, ",URL:,None\n");
-    fprintf(csvFile, ",Owner:,None\n");
+    fprintf(csvFile, ",URL:\n");
+    fprintf(csvFile, ",Owner:\n");
 
     time_t now = time(NULL);
     struct tm* localTime = localtime(&now);
@@ -56,6 +48,7 @@ static void _generatePrologue(SimulationComputed* simulation) {
 
 static void _generateEpilogue() {
     logDebugging(_logger, "Generating epilogue");
+
     fprintf(csvFile, "LAYERS\n");
     fprintf(csvFile, "ID,Label,Parent Layer ID,Visible,Locked\n");
     fprintf(csvFile, "%d,,,true,false\n", DEFAULT_LAYER-1);
@@ -63,6 +56,7 @@ static void _generateEpilogue() {
     fprintf(csvFile,"\n");
 }
 
+// ------------------------------------------AUXILIARY FUNCTIONS---------------------------------------------
 static char * _vectorToString(int x, int y) {
     char auxBuffer[100];
     snprintf(auxBuffer, sizeof(auxBuffer), "\"{\"\"x\"\":%d,\"\"y\"\":%d,\"\"width\"\":46,\"\"height\"\":46}\"", x, y);
@@ -92,6 +86,8 @@ static char* _colorToString(Color color) {
         return "Green";
     case BLUE:
         return "Blue";
+    case ORANGE:
+        return "Orange";
     }
 }
 
@@ -100,6 +96,8 @@ static char * _booleanToString(boolean boolean) {
         return "true";
     return "false";
 }
+
+
 
 static char* _activationModeToString(ActivationMode activationMode) {
     switch (activationMode) {
@@ -126,6 +124,12 @@ static char * _distributionToString(boolean distribution) {
     return "deterministic";
 }
 
+static char * _multiconversionToString(boolean isMulticonversion) {
+    if (isMulticonversion)
+        return "multiple";
+    return "single";
+}
+
 static char* _formulaTypeToString(FormulaType type) {
     switch (type) {
     case PERCENTAGE_TYPE: return "%";
@@ -135,85 +139,72 @@ static char* _formulaTypeToString(FormulaType type) {
     }
 }
 
-static char * _expressionToString(Expression * expression) {
-    char buffer[64];
-    switch (expression->type) {
-    case FACTOR:
-        snprintf(buffer, sizeof(buffer), "%d", expression->factor->value);
-    }
-    return strdup(buffer);
-}
-
-static char * _formulaToString(Formula * formula) {
+static void _formulaToString(Formula * formula, char * buffer, size_t bufferSize) {
     const char *typeString = _formulaTypeToString(formula->type);
-    char *expressionString = _expressionToString(formula->expression);
-
-    char result[64];
-    snprintf(result, sizeof(result), "%s%s", typeString, expressionString);
-
-    free(expressionString);
-    return strdup(result);
+    snprintf(buffer, bufferSize, "%s%d", typeString, formula->expression->factor->value);
 }
+
+//-------------------------------------------GENERATE PRIVATE FUNCTIONS-----------------------------------------------------
 
 static void _generateSources(NodeComputed* source) {
-    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%s,0\n", source->id, source->name, DEFAULT_LAYER, _vectorToString(source->positionX, source->positionY),
+    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%s,%d\n", source->id, source->name, DEFAULT_LAYER, _vectorToString(source->positionX, source->positionY),
             _activationToString(source->activation), _colorToString(source->color),
-            _activationModeToString(source->activationMode));
+            _activationModeToString(source->activationMode), source->layerPosition);
     if (source->next != NULL)
         _generateSources(source->next);
 }
 
 static void _generatePools(NodeComputed* pool) {
-    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%u,%s,%d,%d,%s,true,0\n", pool->id, pool->name, DEFAULT_LAYER, _vectorToString(pool->positionX, pool->positionY),
+    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%u,%s,%d,%d,%s,true,%d\n", pool->id, pool->name, DEFAULT_LAYER, _vectorToString(pool->positionX, pool->positionY),
             _activationToString(pool->activation), _activationModeToString(pool->activationMode), pool->initialResources,
             _colorToString(pool->color), pool->capacityLimit, pool->capacityDisplay,
-            _drainOnOverflowToString(pool->drainOnOverflow));
+            _drainOnOverflowToString(pool->drainOnOverflow), pool->layerPosition);
     if (pool->next != NULL)
         _generatePools(pool->next);
 }
 
 static void _generateGates(NodeComputed* gate) {
-    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%s,0\n", gate->id, gate->name, DEFAULT_LAYER, _vectorToString(gate->positionX, gate->positionY),_activationToString(gate->activation),_activationModeToString(gate->activationMode), _distributionToString(gate->distribution));
+    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%s,%d\n", gate->id, gate->name, DEFAULT_LAYER, _vectorToString(gate->positionX, gate->positionY),_activationToString(gate->activation),_activationModeToString(gate->activationMode), _distributionToString(gate->randomDistribution), gate->layerPosition);
     if (gate->next != NULL)
         _generateGates(gate->next);
 }
 
 static void _generateConverters(NodeComputed * converter) {
-    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%s,%s,0\n", converter->id, converter->name, DEFAULT_LAYER, _vectorToString(converter->positionX, converter->positionY),_activationToString(converter->activation), _activationModeToString(converter->activationMode), _colorToString(converter->color), _booleanToString(converter->multiConversion));
+    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%s,%s,%d\n", converter->id, converter->name, DEFAULT_LAYER, _vectorToString(converter->positionX, converter->positionY),_activationToString(converter->activation), _activationModeToString(converter->activationMode), _colorToString(converter->color), _multiconversionToString(converter->multiConversion), converter->layerPosition);
     if (converter->next != NULL)
         _generateConverters(converter->next);
 }
 
 static void _generateDrains(NodeComputed * drain) {
-    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,0\n", drain->id, drain->name, DEFAULT_LAYER, _vectorToString(drain->positionX, drain->positionY),_activationToString(drain->activation), _activationModeToString(drain->activationMode));
+    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%d\n", drain->id, drain->name, DEFAULT_LAYER, _vectorToString(drain->positionX, drain->positionY),_activationToString(drain->activation), _activationModeToString(drain->activationMode), drain->layerPosition);
     if (drain->next != NULL)
         _generateDrains(drain->next);
 }
 
 static void _generateDelays(NodeComputed * delay) {
-    fprintf(csvFile, "%u,,%u,,%s,,%s,%s,0\n", delay->id, DEFAULT_LAYER, _vectorToString(delay->positionX, delay->positionY),_activationToString(delay->activation), _booleanToString(delay->queue));
+    fprintf(csvFile, "%u,%s,%u,,%s,,%s,%s,%d\n", delay->id, delay->name, DEFAULT_LAYER, _vectorToString(delay->positionX, delay->positionY),_activationToString(delay->activation), _booleanToString(delay->queue), delay->layerPosition);
     if (delay->next != NULL)
         _generateDelays(delay->next);
 }
 
 static void _generateEndConditions(NodeComputed * endCondition) {
-    fprintf(csvFile, "%u,,%u,,%s,,0\n", endCondition->id, DEFAULT_LAYER, _vectorToString(endCondition->positionX, endCondition->positionY));
+    fprintf(csvFile, "%u,%s,%u,,%s,,%d\n", endCondition->id, endCondition->name, DEFAULT_LAYER, _vectorToString(endCondition->positionX, endCondition->positionY), endCondition->layerPosition);
     if (endCondition->next != NULL)
         _generateEndConditions(endCondition->next);
 }
 
 static void _generateResourceConnections(ConnectionComputed * resourceConnections) {
-    char * formula = _formulaToString(resourceConnections->formula);
-    fprintf(csvFile, "%u,,%u,,%s,,%s,,%u,%u,interval-based,false,Black,false,,,0\n", resourceConnections->id, DEFAULT_LAYER, _vectorToString(0,0),formula, resourceConnections->sourceId, resourceConnections->targetId);
-    free(formula);
+    char formula[64];
+    _formulaToString(resourceConnections->formula, formula, sizeof(formula));
+    fprintf(csvFile, "%u,,%u,,%s,,%s,,%u,%u,interval-based,false,Black,false,,,%d\n", resourceConnections->id, DEFAULT_LAYER, _vectorToString(0,0),formula, resourceConnections->sourceId, resourceConnections->targetId, resourceConnections->layerPosition);
     if (resourceConnections->next != NULL)
         _generateResourceConnections(resourceConnections->next);
 }
 
 static void _generateStateConnections(ConnectionComputed * stateConnections) {
-    char * formula = _formulaToString(stateConnections->formula);
-    fprintf(csvFile, "%u,,%u,,%s,,%s,%u,%u,false,Black,receiving resource,0\n", stateConnections->id, DEFAULT_LAYER, _vectorToString(0,0),formula, stateConnections->sourceId, stateConnections->targetId);
-    free(formula);
+    char formula[64];
+    _formulaToString(stateConnections->formula, formula, sizeof(formula));
+    fprintf(csvFile, "%u,,%u,,%s,,%s,%u,%u,false,Black,receiving resource,%d\n", stateConnections->id, DEFAULT_LAYER, _vectorToString(0,0),formula, stateConnections->sourceId, stateConnections->targetId, stateConnections->layerPosition);
     if (stateConnections->next != NULL)
         _generateStateConnections(stateConnections->next);
 }
@@ -230,6 +221,14 @@ static void _generateProgram(SimulationComputed* simulation) {
         fprintf(csvFile,
                 "ID,Label,Layer ID,Group ID,Geometry,Style,Activation,Resources (color),Activation Mode,Position\n");
         _generateSources(simulation->sources);
+        fprintf(csvFile, "\n");
+    }
+
+    if (simulation->drains != NULL) {
+        logDebugging(_logger, "Generating drains");
+        fprintf(csvFile, "DRAINS\n");
+        fprintf(csvFile, "ID,Label,Layer ID,Group ID,Geometry,Style,Activation,Activation Mode,Position\n");
+        _generateDrains(simulation->drains);
         fprintf(csvFile, "\n");
     }
 
@@ -250,13 +249,14 @@ static void _generateProgram(SimulationComputed* simulation) {
         fprintf(csvFile, "\n");
     }
 
-    if (simulation->drains != NULL) {
-        logDebugging(_logger, "Generating drains");
-        fprintf(csvFile, "DRAINS\n");
-        fprintf(csvFile, "ID,Label,Layer ID,Group ID,Geometry,Style,Activation,Activation Mode,Position\n");
-        _generateDrains(simulation->drains);
+    if (simulation->converters != NULL) {
+        logDebugging(_logger, "Generating converters");
+        fprintf(csvFile, "CONVERTERS\n");
+        fprintf(csvFile, "ID,Label,Layer ID,Group ID,Geometry,Style,Activation,Activation Mode,Resources (color),Conversion,Position\n");
+        _generateConverters(simulation->converters);
         fprintf(csvFile, "\n");
     }
+
     if (simulation->delays != NULL) {
         logDebugging(_logger, "Generating delays");
         fprintf(csvFile, "DELAYS\n");
@@ -264,6 +264,7 @@ static void _generateProgram(SimulationComputed* simulation) {
         _generateDelays(simulation->delays);
         fprintf(csvFile, "\n");
     }
+
     if (simulation->endConditions != NULL) {
         logDebugging(_logger, "Generating end conditions");
         fprintf(csvFile, "END CONDITIONS\n");
@@ -272,13 +273,7 @@ static void _generateProgram(SimulationComputed* simulation) {
         fprintf(csvFile, "\n");
     }
 
-    if (simulation->converters != NULL) {
-        logDebugging(_logger, "Generating converters");
-        fprintf(csvFile, "CONVERTERS\n");
-        fprintf(csvFile, "ID,Label,Layer ID,Group ID,Geometry,Style,Activation,Activation Mode,Resources (color),Conversion,Position\n");
-        _generateConverters(simulation->converters);
-        fprintf(csvFile, "\n");
-    }
+
     if (simulation->resourceConnections != NULL) {
         logDebugging(_logger, "Generating resource connections");
         fprintf(csvFile, "RESOURCE CONNECTIONS\n");
@@ -297,10 +292,25 @@ static void _generateProgram(SimulationComputed* simulation) {
 
 
 // /** PUBLIC FUNCTIONS */
+void initializeGeneratorModule() {
+    _logger = createLogger("Generator");
+
+}
+
+void shutdownGeneratorModule() {
+    if (_logger != NULL) {
+        destroyLogger(_logger);
+    }
+}
 
 void generate(CompilerState* compilerState) {
     logDebugging(_logger, "Generating final output...");
-    FILE* file = fopen(csvName, "w");
+
+    FILE* file = fopen(CSV_NAME, "w");
+    if (file == NULL) {
+        logError(_logger, "Failed to open file %s", CSV_NAME);
+        return;
+    }
     csvFile = file;
 
     _generatePrologue(compilerState->simulation);
