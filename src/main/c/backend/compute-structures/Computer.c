@@ -8,6 +8,11 @@
 #define DEFAULT_SIMULATION_TIME_STEPS_LIMIT 100;
 #define DEFAULT_SIMULATION_TIME_INTERVAL 1;
 
+#define MIN_POSITION_X 46
+#define MAX_POSITION_X 1518
+#define MIN_POSITION_Y 69
+#define MAX_POSITION_Y 713
+
 KHASH_MAP_INIT_STR(str_int, int)
 khash_t(str_int)* hashMap;
 khiter_t hashMapIter;
@@ -179,8 +184,8 @@ static NodeComputed* _computeNode(SimulationNode* node, char * originalId) {
     nodeComputed->activation=PASSIVE;
     nodeComputed->activationMode=PULL_ANY;
     nodeComputed->color=BLACK;
-    nodeComputed->positionX=0;
-    nodeComputed->positionY=0;
+    nodeComputed->positionX=rand() % MAX_POSITION_X + MIN_POSITION_X;
+    nodeComputed->positionY=rand() % MAX_POSITION_Y + MIN_POSITION_Y;
     nodeComputed->randomDistribution=false;
     nodeComputed->layerPosition = position++;
     nodeComputed->next = NULL;
@@ -327,6 +332,8 @@ static boolean _computeSimulation(Simulation* simulation) {
     setSimulationScopeAsActive(symbolTableManager);
     if (_computeSimParams(simulation->params) == false)
         return false;
+
+    srand(time(NULL));
     if (_computeSimElements(simulation->simElements)==false)
         return false;
     exitCurrentScope(symbolTableManager);
