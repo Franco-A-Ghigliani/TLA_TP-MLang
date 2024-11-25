@@ -128,8 +128,8 @@ static boolean _setParams(NodeComputed* nodeComputed, NodeParams* params) {
 static boolean _computeTemplateInstantiation(TemplateInstance* instance) {
     switch (instance->type) {
     case SIMULATION_INSTANCE:
-        offsetX = (rand() % MAX_POSITION_X + MIN_POSITION_X)/2;
-        offsetY = (rand() % MAX_POSITION_Y + MIN_POSITION_Y)/2;
+        offsetX = (rand() % MAX_POSITION_X + MIN_POSITION_X);
+        offsetY = (rand() % MAX_POSITION_Y + MIN_POSITION_Y);
         simulationTemplate = instance->name;
         if (_computeSimElements(getItemByID(symbolTableManager, instance->templateReference, true)->value.simulationTemplate.elementsInTree) == false)
             return false;
