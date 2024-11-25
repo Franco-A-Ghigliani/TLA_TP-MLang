@@ -58,6 +58,7 @@ add_executable(Compiler
 	src/main/c/backend/symbol-table/SymbolTableCDT.c
 	src/main/c/backend/symbol-table/HashTable.c
 	src/main/c/backend/compute-structures/Computer.c
+	src/main/c/backend/compute-structures/hashMap.c
 	src/main/c/EntryPoint.c
 	src/main/c/frontend/lexical-analysis/FlexActions.c
 	src/main/c/frontend/lexical-analysis/FlexScanner.c

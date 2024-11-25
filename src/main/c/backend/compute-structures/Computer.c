@@ -2,7 +2,7 @@
 
 #include <time.h>
 
-#include "khash.h"
+#include "hashMap.h"
 #include "../../shared/Logger.h"
 #define DEFAULT_SIMULATION_NAME "My Simulation";
 #define DEFAULT_SIMULATION_TIME_STEPS_LIMIT 100;
@@ -13,13 +13,10 @@
 #define MIN_POSITION_Y 69
 #define MAX_POSITION_Y 713
 
-KHASH_MAP_INIT_STR(str_int, int)
-khash_t(str_int)* hashMap;
-khiter_t hashMapIter;
-
 static ComputationResult* computationResult;
 static SymbolTableManagerADT symbolTableManager;
 static Logger *_logger = NULL;
+static HashMap * hashMap;
 
 static int id = 100;
 static int position = 0;
@@ -168,24 +165,20 @@ static NodeComputed* _computeNode(SimulationNode* node, char * originalId) {
          nodeName = node->id;
 
     //Set id in case of simulationInstance
-    char name[150];
+    char name[150] = "";
     if (simulationTemplate != NULL) {
         strcpy(name, simulationTemplate);
         strcat(name, ".");
     }
     strcat(name, nodeName);
 
-    char * finalName = strdup(name);
-    int ret;
-    hashMapIter = kh_put(str_int, hashMap,  finalName, &ret);
-    if (!ret) {
-        logError(_logger, "Node label %s already exists in hashMap", node->id);
-        free( nodeName);
-        return NULL;
-    }
+    logDebugging(_logger, "Final name for hashMap %s", name);
 
-    kh_value(hashMap, hashMapIter) = id++;
     nodeComputed->id = id;
+    insert(hashMap, name, id);
+    int found;
+    logDebugging(_logger, "Set id %d to %s", get(hashMap, name, &found), name);
+    id++;
 
     //Set defaults
     nodeComputed->name="";
@@ -247,7 +240,7 @@ static NodeComputed* _computeNode(SimulationNode* node, char * originalId) {
 }
 
 void _concatenateReferences(NodeReference *head, char * buffer) {
-    NodeReference *current = head;
+    NodeReference * current = head;
     while (current != NULL) {
         strcat(buffer, current->reference);
         if (current->next != NULL)
@@ -257,28 +250,23 @@ void _concatenateReferences(NodeReference *head, char * buffer) {
 
 }
 
-
 static boolean _computeConnection(SimConnection* connection) {
     ConnectionComputed* connectionComputed = malloc(sizeof(ConnectionComputed));
     connectionComputed->id = id++;
     connectionComputed->layerPosition = position++;
 
-    int sourceId = 0;
-    int targetId = 0;
-
-    char from[50];
+    char from[50] = "";
+    char to[50] =  "";
     _concatenateReferences(connection->from, from);
-
-    char to[50];
     _concatenateReferences(connection->to, to);
 
-    hashMapIter = kh_get(str_int, hashMap, from);
-    if (hashMapIter != kh_end(hashMap))
-        sourceId = kh_value(hashMap, hashMapIter);
+    int found;
 
-    hashMapIter = kh_get(str_int, hashMap, to);
-    if (hashMapIter != kh_end(hashMap))
-        targetId = kh_value(hashMap, hashMapIter);
+    int sourceId = get(hashMap, from, &found);
+    logDebugging(_logger, "Id from %s is %d", from ,sourceId);
+
+    int targetId = get(hashMap, to, &found);
+    logDebugging(_logger, "Id from %s is %d", to ,targetId);
 
     connectionComputed->sourceId = sourceId;
     connectionComputed->targetId = targetId;
@@ -301,6 +289,7 @@ static boolean _computeConnection(SimConnection* connection) {
     *list = connectionComputed;
     return true;
 }
+
 
 
 static boolean _computeSimElements(SimElements* elements) {
@@ -424,10 +413,11 @@ ComputationResult* compute(Program* program, SymbolTableManagerADT symbolTableMa
 
     computationResult = computed;
     symbolTableManager = symbolTableManagerAdt;
-    hashMap = kh_init(str_int);
+    hashMap = createHashMap();
 
     _computeSimulationWrapper(program->simulationWrapper);
 
+    freeHashMap(hashMap);
     return computationResult;
 }
 
