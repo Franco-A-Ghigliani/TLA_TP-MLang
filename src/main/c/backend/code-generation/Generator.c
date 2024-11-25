@@ -132,7 +132,6 @@ static char * _multiconversionToString(boolean isMulticonversion) {
 
 static char* _formulaTypeToString(FormulaType type) {
     switch (type) {
-    case PERCENTAGE_TYPE: return "%";
     case GREATER_THAN_TYPE: return ">";
     case LESS_THAN_TYPE: return "<";
     case FORMULA_EXPRESSION: return "";
@@ -140,8 +139,12 @@ static char* _formulaTypeToString(FormulaType type) {
 }
 
 static void _formulaToString(Formula * formula, char * buffer, size_t bufferSize) {
-    const char *typeString = _formulaTypeToString(formula->type);
-    snprintf(buffer, bufferSize, "%s%d", typeString, formula->expression->factor->value);
+    if (formula->type == PERCENTAGE_TYPE)
+        snprintf(buffer, bufferSize, "%d%%", formula->expression->factor->value);
+    else {
+        const char *typeString = _formulaTypeToString(formula->type);
+        snprintf(buffer, bufferSize, "%s%d", typeString, formula->expression->factor->value);
+    }
 }
 
 //-------------------------------------------GENERATE PRIVATE FUNCTIONS-----------------------------------------------------

@@ -39,7 +39,10 @@ static int _computeFactor(Factor* factor) {
     case INTEGER_TYPE:
         return factor->value;
     case EXPRESSION:
-        return _computeExpression(factor->exp);
+        int value = _computeExpression(factor->exp);
+        if (factor->negated)
+            value = -value;
+        return value;
     }
 }
 
@@ -125,8 +128,8 @@ static boolean _setParams(NodeComputed* nodeComputed, NodeParams* params) {
 static boolean _computeTemplateInstantiation(TemplateInstance* instance) {
     switch (instance->type) {
     case SIMULATION_INSTANCE:
-        offsetX = (rand() % MAX_POSITION_X + MIN_POSITION_X)/5;
-        offsetY = (rand() % MAX_POSITION_Y + MIN_POSITION_Y)/5;
+        offsetX = (rand() % MAX_POSITION_X + MIN_POSITION_X)/2;
+        offsetY = (rand() % MAX_POSITION_Y + MIN_POSITION_Y)/2;
         simulationTemplate = instance->name;
         if (_computeSimElements(getItemByID(symbolTableManager, instance->templateReference, true)->value.simulationTemplate.elementsInTree) == false)
             return false;
@@ -197,12 +200,6 @@ static NodeComputed* _computeNode(SimulationNode* node, char * originalId) {
     nodeComputed->layerPosition = position++;
     nodeComputed->next = NULL;
 
-    if (_setParams(nodeComputed, node->nodeParams) == false)
-        return NULL;
-
-    nodeComputed->positionX += offsetX;
-    nodeComputed->positionY += offsetY;
-
     NodeComputed** list = NULL;
     switch (node->type) {
     case SOURCE_TYPE:
@@ -235,6 +232,12 @@ static NodeComputed* _computeNode(SimulationNode* node, char * originalId) {
 
     nodeComputed->next = *list;
     *list = nodeComputed;
+
+    if (_setParams(nodeComputed, node->nodeParams) == false)
+        return NULL;
+
+    nodeComputed->positionX += offsetX;
+    nodeComputed->positionY += offsetY;
 
     return nodeComputed;
 }
